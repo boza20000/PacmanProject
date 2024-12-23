@@ -1,0 +1,3 @@
+﻿  PacmanProject.cpp
+C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\PacmanProject.cpp(321,15): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+  PacmanProject.vcxproj -> C:\Users\bobi_\source\repos\PacmanProject\x64\Debug\PacmanProject.exe
