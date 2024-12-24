@@ -13,21 +13,39 @@ const char wallSymbol = '#';
 const char foodSymbol = '@';
 const char pointSymbol = '.';
 const char emptySymbol = ' ';
-const int foodAmount = 4;
-const int prizeOfFood = 25;
-const int prizeOfPoint = 0;
+const size_t foodAmount = 4;
+const size_t prizeOfFood = 25;
+const size_t prizeOfPoint = 0;
 int foodX[foodAmount], foodY[foodAmount];
 bool isRemovable = false;
+const size_t wallsIncl = 2;
 
 char** grid = nullptr;
 int widthGrid = 0, heightGrid = 0;
 std::ifstream file("map.txt");
 
+
+void setCursorPosition(int x, int y) {
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    COORD position = { static_cast<SHORT>(x), static_cast<SHORT>(y) };
+    SetConsoleCursorPosition(hConsole, position);
+}
+void hideCursor() {
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_CURSOR_INFO cursorInfo;
+    cursorInfo.dwSize = 1;
+    cursorInfo.bVisible = FALSE;
+    SetConsoleCursorInfo(hConsole, &cursorInfo);
+}
+void clearConsole() {
+    system("cls");
+}
+
 void allocateMemoryForGrid(int rows, int cols) {
     grid = new char* [rows];
-    for (int i = 0; i < rows; ++i) {
+    for (int i = 0; i < rows ; i++) {
         grid[i] = new char[cols];
-        for (int j = 0; j < cols; ++j) {
+        for (int j = 0; j < cols ; j++) {
             grid[i][j] = ' ';
         }
     }
@@ -35,7 +53,7 @@ void allocateMemoryForGrid(int rows, int cols) {
 
 void deallocateMemoryForGrid() {
     if (grid != nullptr) {
-        for (int i = 0; i < heightGrid; i++) {
+        for (int i = 0; i < heightGrid ; i++) {
             delete[] grid[i];
         }
         delete[] grid;
@@ -44,6 +62,20 @@ void deallocateMemoryForGrid() {
 }
 void ignoreLineTillEnd() {
     file.ignore(std::streamsize(INT_MAX), '\n'); // Skip to the next line
+}
+
+void putEndWalls() {
+
+    for (size_t i = 0; i < heightGrid ; i++)
+    {
+        for (size_t j = 0; j < widthGrid ; j++)
+        {
+            if ((heightGrid-1) == i || (widthGrid-1) == j) {
+                grid[i][j] = '#';
+            }
+        }
+    }
+
 }
 
 void loadFileMap() {
@@ -61,11 +93,12 @@ void loadFileMap() {
         ignoreLineTillEnd();
     }
     file.close();
+
+    putEndWalls();
 }
 
-
 void displayMap() {
-    for (int i = 0; i < heightGrid; ++i) {
+    for (int i = 0; i < heightGrid ; ++i) {
         for (int j = 0; j < widthGrid; ++j) {
             std::cout << grid[i][j] << " ";
         }
@@ -73,7 +106,7 @@ void displayMap() {
     }
 }
 
-void start() {
+void startGame() {
     std::cout << "Enter grid width: ";
     std::cin >> widthGrid;
     std::cout << "Enter grid height: ";
@@ -83,25 +116,12 @@ void start() {
         std::cerr << "Error: Grid dimensions must be positive integers under 50(incl.)" << std::endl;
         std::exit(1);
     }
-
-    allocateMemoryForGrid(heightGrid, widthGrid);
+    widthGrid += wallsIncl;
+    heightGrid += wallsIncl;
+    allocateMemoryForGrid(heightGrid , widthGrid );
+    clearConsole();
 }
 
-void setCursorPosition(int x, int y) {
-    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    COORD position = { static_cast<SHORT>(x), static_cast<SHORT>(y) };
-    SetConsoleCursorPosition(hConsole, position);
-}
-void hideCursor() {
-    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    CONSOLE_CURSOR_INFO cursorInfo;
-    cursorInfo.dwSize = 1;
-    cursorInfo.bVisible = FALSE;
-    SetConsoleCursorInfo(hConsole, &cursorInfo);
-}
-void clearConsole() {
-    system("cls");
-}
 void waitForEnd() {
     while (true) {
         for (int key = 0x08; key <= 0xFE; ++key) {
@@ -319,9 +339,11 @@ void movePacman() {
 void InitializeGame() {
     hideCursor();
     srand(time(0));
-
-    // spawnPacman();
-    // spawnFood();
+    startGame();
+    loadFileMap();
+    displayMap();
+    spawnPacman();
+    spawnFood();
 }
 
 void GameLoop() {
