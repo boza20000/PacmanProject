@@ -5,19 +5,45 @@
 #include <fstream>
 
 int pacmanX, pacmanY;
-const size_t amountOfGhosts = 4;
-int ghostX[amountOfGhosts], ghostY[amountOfGhosts];
 int playerScore = 0;
+
 const char pacmanSymbol = 'P';
 const char wallSymbol = '#';
 const char foodSymbol = '@';
 const char pointSymbol = '.';
 const char emptySymbol = ' ';
-const size_t foodAmount = 4;
-const size_t prizeOfFood = 25;
-const size_t prizeOfPoint = 0;
+
+const size_t amountOfGhosts = 4;
+int ghostX[amountOfGhosts], ghostY[amountOfGhosts];
+const char blinkySymbol = 'B';
+const char pinkySymbol = 'Y';
+const char inkySymbol = 'I';
+const char clydeSymbol = 'C';
+
+const size_t blinkyNumber = 0;
+const size_t pinkyNumber = 1;
+const size_t inkyNumber = 2;
+const size_t clydeNumber = 3;
+
+const char* redColor = "\033[31m";
+const char* pinkColor = "\033[35m";
+const char* blueColor = "\033[34m";
+const char* greenColor ="\033[32m";
+const char* endColor = "\033[0m";
+
+const char scoreToActivtRed = 0;
+const char scoreToActivtPink = 20;
+const char scoreToActivtBlue = 40;
+const char scoreToActivtGreen = 60;
+
+const size_t foodAmount = 6;
+const size_t prizeOfFood = 20;
+const size_t prizeOfPoint = 1;
+
 int foodX[foodAmount], foodY[foodAmount];
-bool isRemovable = false;
+bool isGhostRemovable = false;
+bool isNormalMode = true;
+bool isChaseMode = false;
 const size_t wallsIncl = 2;
 
 char** grid = nullptr;
@@ -64,6 +90,7 @@ void ignoreLineTillEnd() {
     file.ignore(std::streamsize(INT_MAX), '\n'); // Skip to the next line
 }
 
+//put walls over the sides that are cut 
 void putEndWalls() {
 
     for (size_t i = 0; i < heightGrid ; i++)
@@ -78,6 +105,7 @@ void putEndWalls() {
 
 }
 
+//gest the map from a file with the height and width that the user inputed
 void loadFileMap() {
     if (!file) {
         std::cerr << "Error: Could not open file" << std::endl;
@@ -97,6 +125,7 @@ void loadFileMap() {
     putEndWalls();
 }
 
+//displayes the map 
 void displayMap() {
     for (int i = 0; i < heightGrid ; ++i) {
         for (int j = 0; j < widthGrid; ++j) {
@@ -106,6 +135,7 @@ void displayMap() {
     }
 }
 
+//starts the game and waits for grid paremeters
 void startGame() {
     std::cout << "Enter grid width: ";
     std::cin >> widthGrid;
@@ -116,12 +146,16 @@ void startGame() {
         std::cerr << "Error: Grid dimensions must be positive integers under 50(incl.)" << std::endl;
         std::exit(1);
     }
-    widthGrid += wallsIncl;
-    heightGrid += wallsIncl;
+    if (widthGrid<49 || heightGrid<49) {
+        widthGrid += wallsIncl;
+        heightGrid += wallsIncl;
+    }
+    
     allocateMemoryForGrid(heightGrid , widthGrid );
     clearConsole();
 }
 
+//waits for keystrock to end the game
 void waitForEnd() {
     while (true) {
         for (int key = 0x08; key <= 0xFE; ++key) {
@@ -133,18 +167,20 @@ void waitForEnd() {
         Sleep(50);
     }
 }
+
+//visualises the player score
 void displayPlayerScore() {
-    setCursorPosition(widthGrid * 2, heightGrid / 2);
+    setCursorPosition(widthGrid * 2 + 1, heightGrid / 2);
     std::cout << "Score: " << playerScore << "  ";
 }
 
-//test
-// Function to update the score (just for testing purposes)
+//updates score of the player
 void updateScore(int points) {
-    playerScore += points;  // Add points to the player score
-    displayPlayerScore();   // Display updated score
+    playerScore += points;  
+    displayPlayerScore();   
 }
 
+//game over screen
 void displayGameOver() {
     clearConsole();
     std::cout << R"(
@@ -163,8 +199,8 @@ void displayGameOver() {
     waitForEnd();
 }
 
-//the game is not over untill the player collects the foods
-bool gameOver() {
+//check whether all food is collected
+bool collectedAllFood() {
     for (size_t i = 0; i < foodAmount; i++) {
         if (grid[foodY[i]][foodX[i]] == foodSymbol) {
             return false;
@@ -173,8 +209,25 @@ bool gameOver() {
     return true;
 }
 
+//check for collision with ghost
+bool CollidesWithGhost() {
+    for (size_t i = 0; i < amountOfGhosts; i++)
+    {
+        if (ghostX[i] == pacmanX && ghostY[i] == pacmanY)
+        {
+            return  true;
+        }
+    }
+    return false;
+}
+
+//the game is not over untill the player collects the foods or collides with a ghost
+bool gameOver() {
+    return CollidesWithGhost() || collectedAllFood(); 
+}
+
 void startFrightenMode() {
-    isRemovable = true;
+    isGhostRemovable = true;
 }
 void spawnFood() {
     for (int i = 0; i < foodAmount; i++) {
@@ -203,22 +256,6 @@ void setScreenSize() {
     //create a function that handels big matrix (consol handles to 30x30)
 }
 
-//void drawGrid() {
-//    for (size_t i = 0; i < gridHeight; i++) {
-//        for (size_t j = 0; j < gridWidth; j++) {
-//           
-//            if (i == 0 || j == 0 || i == (gridHeight - 1) || j == (gridWidth - 1)) {
-//                grid[i][j] = wallSymbol;
-//            }
-//            else {
-//                grid[i][j] = pointSymbol;
-//            }
-//            std::cout << grid[i][j] << " "; 
-//        }
-//        std::cout << std::endl; 
-//    }
-//}
-
 void spawnPacman() {
     do {
         pacmanX = rand() % (widthGrid - 2) + 1;
@@ -234,7 +271,7 @@ void updateCell(int x, int y, char symbol) {
     setCursorPosition(x * 2, y);  // Adjust cursor for grid spacing
     std::cout << symbol;  // Update only the specified cell
 }
-void clearOldPosition() {
+void clearOldPositionPacman() {
     updateCell(pacmanX, pacmanY, emptySymbol);
 }
 
@@ -261,7 +298,7 @@ void moveUp() {
             updateScore(prizeOfPoint);
         }
         setOldPlayerPositionEmpty();
-        clearOldPosition();
+        clearOldPositionPacman();
         pacmanY -= 1;
         setPacmanPosition();
         updatePacmanGridPosition();
@@ -278,7 +315,7 @@ void moveDown() {
             updateScore(prizeOfPoint);
         }
         setOldPlayerPositionEmpty();
-        clearOldPosition();
+        clearOldPositionPacman();
         pacmanY += 1;
         setPacmanPosition();
         updatePacmanGridPosition();
@@ -296,7 +333,7 @@ void moveLeft() {
             updateScore(prizeOfPoint);
         }
         setOldPlayerPositionEmpty();
-        clearOldPosition();
+        clearOldPositionPacman();
         pacmanX -= 1;
         setPacmanPosition();
         updatePacmanGridPosition();
@@ -313,7 +350,7 @@ void moveRight() {
             updateScore(prizeOfPoint);
         }
         setOldPlayerPositionEmpty();
-        clearOldPosition();
+        clearOldPositionPacman();
         pacmanX += 1;
         setPacmanPosition();
         updatePacmanGridPosition();
@@ -336,18 +373,81 @@ void movePacman() {
     }
 }
 
+int getGhostYCoord(int ghostNumber) {
+    return ghostY[ghostNumber];
+}
+
+int getGhostXCoord(int ghostNumber) {
+    return ghostX[ghostNumber];
+}
+
+void setGhostCoord(int x, int y, int ghostNumber) {
+    ghostX[ghostNumber] = x;
+    ghostY[ghostNumber] = y;
+}
+
+void repaintGhost(int ghostNumber, const char* color) {
+    int x = getGhostXCoord(ghostNumber);
+    int y = getGhostYCoord(ghostNumber);
+
+    setCursorPosition(x * 2, y);
+    std::cout << emptySymbol;
+
+    setCursorPosition(x * 2, y);
+    std::cout << color << grid[y][x] << endColor;
+}
+
+void spawnGhost() {
+    
+    //starting coords
+    //put in array for ghosts
+    setGhostCoord(1, 2, blinkyNumber);  // Blinky
+    setGhostCoord(1, 1, pinkyNumber);  // Pinky
+    setGhostCoord(2, 1, inkyNumber);  // Inky
+    setGhostCoord(3, 1, clydeNumber);  // Clyde
+
+    
+    grid[ghostY[0]][ghostX[0]] = blinkySymbol;
+    grid[ghostY[1]][ghostX[1]] = pinkySymbol;
+    grid[ghostY[2]][ghostX[2]] = inkySymbol;
+    grid[ghostY[3]][ghostX[3]] = clydeSymbol;
+
+    repaintGhost(blinkyNumber, redColor);  // Red for Blinky
+    repaintGhost(pinkyNumber, pinkColor);  // Pink for Pinky
+    repaintGhost(inkyNumber, blueColor);  // Blue for Inky
+    repaintGhost(clydeNumber, greenColor);  // Green for Clyde
+}
+
+void ghostActivation() {
+    if (playerScore>= scoreToActivtRed) {
+        //activateRed
+    }
+    if (playerScore>= scoreToActivtPink) {
+        //activatePink
+    }
+    if (playerScore>= scoreToActivtBlue) {
+        //activateBLue
+    }
+    if (playerScore >= scoreToActivtGreen) {
+        //activateGreen
+    }
+}
+
+
 void InitializeGame() {
     hideCursor();
     srand(time(0));
     startGame();
     loadFileMap();
     displayMap();
+    spawnGhost();
     spawnPacman();
-    spawnFood();
+    spawnFood();   
 }
 
 void GameLoop() {
     while (!gameOver()) {
+        ghostActivation();
         movePacman();
         displayPlayerScore();
         Sleep(120);
