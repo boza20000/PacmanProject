@@ -40,14 +40,23 @@ const size_t foodAmount = 3;
 const size_t prizeOfFood = 20;
 const size_t prizeOfPoint = 2;
 
+bool isGoingLeft = false;
+bool isGoingRight = false;
+bool isGoingUp = false;
+bool isGoingDown = false;
+
 int foodX[foodAmount], foodY[foodAmount];
 bool isGhostRemovable = false;
 bool isNormalMode = true;
 bool isChaseMode = false;
 const size_t wallsIncl = 2;
-size_t redLastX = -1;
-size_t redLastY = -1;
-char lastSymbol = ' ';
+int redLastX = -1;
+int redLastY = -1;
+int pinkLastX = -1;
+int pinkLastY = -1;
+int blueLastX = -1;
+int blueLastY = -1;
+char lastSymbol[amountOfGhosts] = {' ',' ',' ',' '};
 char** grid = nullptr;
 int widthGrid = 0, heightGrid = 0;
 std::ifstream file("map.txt");
@@ -386,15 +395,19 @@ void movePacmanRight() {
 void handlePacmanMovement() {
 	const int KEY_PRESSED_MASK = 0x8000;
 	if (GetAsyncKeyState('W') & KEY_PRESSED_MASK) {  // W key pressed (up)
+		isGoingUp = true;
 		movePacmanUp();
 	}
 	if (GetAsyncKeyState('S') & KEY_PRESSED_MASK) {  // S key pressed (down)
+		isGoingDown = true;
 		movePacmanDown();
 	}
 	if (GetAsyncKeyState('A') & KEY_PRESSED_MASK) {  // A key pressed (left)
+		isGoingLeft = true;
 		movePacmanLeft();
 	}
 	if (GetAsyncKeyState('D') & KEY_PRESSED_MASK) {  // D key pressed (right)
+		isGoingRight = true;
 		movePacmanRight();
 	}
 }
@@ -447,59 +460,62 @@ void spawnGhost() {
 void eraseGhostFromOldPosition(int ghostNumber) {
 	int x = getGhostXPosition(ghostNumber);
 	int y = getGhostYPosition(ghostNumber);
-
-	if (lastSymbol == foodSymbol) {
+	char previousSymbol = lastSymbol[ghostNumber];
+	if (previousSymbol == foodSymbol) {
 		grid[y][x] = foodSymbol;
-		setConsoleCursorPosition(x * 2, y);
-		std::cout << foodSymbol;
 	}
-	else if (lastSymbol == pointSymbol) {
+	else if (previousSymbol == pointSymbol) {
 		grid[y][x] = pointSymbol;
-		setConsoleCursorPosition(x * 2, y);
-		std::cout << pointSymbol;
 	}
-	else if (lastSymbol == emptySymbol) {
+	else if (previousSymbol == emptySymbol) {
 		grid[y][x] = emptySymbol;
-		setConsoleCursorPosition(x * 2, y);
-		std::cout << emptySymbol;
 	}
+	setConsoleCursorPosition(x * 2, y);
+	std::cout << grid[y][x];
 }
 
-void moveGhostTo(int x, int y, int ghostNumber, char symbol) {
+
+void moveGhostTo(int x, int y, int ghostNumber, char symbol, const char* color) {
 	eraseGhostFromOldPosition(ghostNumber);
 	setGhostPosition(x, y, ghostNumber);
-	lastSymbol = grid[y][x];
+	lastSymbol[ghostNumber] = grid[y][x];
 	grid[y][x] = symbol;
-	repaintGhost(ghostNumber, redColor);
+	repaintGhost(ghostNumber, color);
+}
+bool isCollidedWithGhost(int x, int y) {
+	for (size_t i = 0; i < amountOfGhosts; i++) {
+		if (x == ghostX[i] && y == ghostY[i]) {
+			return true;
+		}
+	}
+	return false;
+}
+bool isDirectionUpClear(int ghostCurX, int ghostCurY, int lastX, int lastY) {
+	return (grid[ghostCurY - 1][ghostCurX] != wallSymbol
+		&& ((ghostCurY - 1) != lastY || ghostCurX != lastX)
+		&& !isCollidedWithGhost(ghostCurX, ghostCurY - 1));
+}
+bool isDirectionLeftClear(int ghostCurX, int ghostCurY, int lastX, int lastY) {
+	return (grid[ghostCurY][ghostCurX - 1] != wallSymbol
+		&& (ghostCurY != lastY || (ghostCurX - 1) != lastX)
+		&& !isCollidedWithGhost(ghostCurX - 1, ghostCurY));
+}
+bool isDirectionRightClear(int ghostCurX, int ghostCurY, int lastX, int lastY) {
+	return (grid[ghostCurY][ghostCurX + 1] != wallSymbol
+		&& ((ghostCurY) != lastY || (ghostCurX+1) != lastX)
+		&& !isCollidedWithGhost(ghostCurX + 1, ghostCurY));
+}
+bool isDirectionDownClear(int ghostCurX, int ghostCurY, int lastX, int lastY) {
+	return (grid[ghostCurY + 1][ghostCurX] != wallSymbol
+		&& ((ghostCurY+1) != lastY || (ghostCurX) != lastX)
+		&& !isCollidedWithGhost(ghostCurX, ghostCurY + 1));
 }
 
-//cant go back
-void shortestPathAlgorithmRed(int ghostNumber) {
-	int ghostCurX = getGhostXPosition(ghostNumber);
-	int ghostCurY = getGhostYPosition(ghostNumber);
+int distanceToPacman(int ghostCurX, int ghostCurY, int changeX, int changeY) {
+	return abs(ghostCurX - (pacmanX + changeX)) + abs(ghostCurY - (pacmanY + changeY));
+}
 
-	int nextX = ghostCurX;
-	int nextY = ghostCurY;
-
-	int distance[4] = { INT_MAX, INT_MAX, INT_MAX, INT_MAX };
-
-	// Up
-	if (grid[ghostCurY - 1][ghostCurX] != wallSymbol && ((ghostCurY - 1) != redLastY || ghostCurX != redLastX)) {
-		distance[0] = abs(ghostCurX - pacmanX) + abs((ghostCurY - 1) - pacmanY);
-	}
-	// Left
-	if (grid[ghostCurY][ghostCurX - 1] != wallSymbol && (ghostCurY != redLastY || (ghostCurX - 1) != redLastX)) {
-		distance[1] = abs((ghostCurX - 1) - pacmanX) + abs(ghostCurY - pacmanY);
-	}
-	// Down
-	if (grid[ghostCurY + 1][ghostCurX] != wallSymbol && ((ghostCurY + 1) != redLastY || ghostCurX != redLastX)) {
-		distance[2] = abs(ghostCurX - pacmanX) + abs((ghostCurY + 1) - pacmanY);
-	}
-	// Right
-	if (grid[ghostCurY][ghostCurX + 1] != wallSymbol && (ghostCurY != redLastY || (ghostCurX + 1) != redLastX)) {
-		distance[3] = abs((ghostCurX + 1) - pacmanX) + abs(ghostCurY - pacmanY);
-	}
-
+void ghostChangePosition(int ghostCurX, int ghostCurY, int nextX, int nextY, int distance[4], int ghostNumber, int symbol, const char* color, int& lastX, int& lastY) {
 	int minDistance = INT_MAX;
 	int direction = -1;
 
@@ -509,7 +525,6 @@ void shortestPathAlgorithmRed(int ghostNumber) {
 			direction = i;
 		}
 	}
-
 	// Update the next position based on the chosen direction
 	switch (direction) {
 	case 0: nextY = ghostCurY - 1; break; // Up
@@ -518,23 +533,99 @@ void shortestPathAlgorithmRed(int ghostNumber) {
 	case 3: nextX = ghostCurX + 1; break; // Right
 	}
 
+	// Move the ghost to the new position
+	moveGhostTo(nextX, nextY, ghostNumber, symbol, color);
 
-	moveGhostTo(nextX, nextY, ghostNumber, blinkySymbol);
-	redLastX = ghostCurX;
-	redLastY = ghostCurY;
+	// Update the last position of the ghost
+	lastX = ghostCurX;
+	lastY = ghostCurY;
 }
+
+void checkDirectionsAvailability(int ghostCurX, int ghostCurY, int distance[], int changeX, int changeY, int lastX, int lastY) {
+	// Up
+	if (isDirectionUpClear(ghostCurX, ghostCurY, lastX, lastY)) {
+		distance[0] = distanceToPacman(ghostCurX, ghostCurY - 1, changeX, changeY);
+	}
+	// Left
+	if (isDirectionLeftClear(ghostCurX, ghostCurY, lastX, lastY)) {
+		distance[1] = distanceToPacman(ghostCurX - 1, ghostCurY, changeX, changeY);
+	}
+	// Down
+	if (isDirectionDownClear(ghostCurX, ghostCurY, lastX, lastY)) {
+		distance[2] = distanceToPacman(ghostCurX, ghostCurY + 1, changeX, changeY);
+	}
+	// Right
+	if (isDirectionRightClear(ghostCurX, ghostCurY, lastX, lastY)) {
+		distance[3] = distanceToPacman(ghostCurX + 1, ghostCurY, changeX, changeY);
+	}
+}
+//red algorithm
+void shortestPathAlgorithmRed() {
+	int ghostCurX = getGhostXPosition(blinkyNumber);
+	int ghostCurY = getGhostYPosition(blinkyNumber);
+	int nextX = ghostCurX;
+	int nextY = ghostCurY;
+	int distance[4] = { INT_MAX, INT_MAX, INT_MAX, INT_MAX };
+	checkDirectionsAvailability(ghostCurX, ghostCurY, distance, 0, 0,redLastX,redLastY);
+	ghostChangePosition(ghostCurX, ghostCurY, nextX, nextY, distance, blinkyNumber, blinkySymbol, redColor,redLastX,redLastY);
+}
+
+//pink algorithm
+void shortestPathAlgorithmPink() {
+	int ghostCurX = getGhostXPosition(pinkyNumber);
+	int ghostCurY = getGhostYPosition(pinkyNumber);
+	int nextX = ghostCurX;
+	int nextY = ghostCurY;
+	int changeOfPacmanNumberY = 0;
+	int changeOfPacmanNumberX = 0;
+
+	if (isGoingRight) {
+		changeOfPacmanNumberX += 4;
+	}
+	else if (isGoingLeft) {
+		changeOfPacmanNumberX -= 4;
+	}
+	if (isGoingDown) {
+		changeOfPacmanNumberY += 4;
+	}
+	else if (isGoingUp) {
+		changeOfPacmanNumberY -= 4;
+		changeOfPacmanNumberX -= 4;  
+	}
+
+	int distance[4] = { INT_MAX, INT_MAX, INT_MAX, INT_MAX };
+	checkDirectionsAvailability(ghostCurX, ghostCurY, distance, changeOfPacmanNumberX, changeOfPacmanNumberY,pinkLastX,pinkLastY);
+	ghostChangePosition(ghostCurX, ghostCurY, nextX, nextY, distance, pinkyNumber, pinkySymbol, pinkColor,pinkLastX,pinkLastY);
+}
+
+//void shortestPathAlgorithmBlue() {
+//	int ghostCurX = getGhostXPosition(inkyNumber);
+//	int ghostCurY = getGhostYPosition(inkyNumber);
+//	int redCurX = getGhostXPosition(blinkyNumber);
+//	int redCurY = getGhostYPosition(blinkyNumber);
+//	int nextX = ghostCurX;
+//	int nextY = ghostCurY;
+//	int changeOfPacmanNumberX = 0;
+//	int changeOfPacmanNumberY = 0;
+//	int distance[4] = { INT_MAX, INT_MAX, INT_MAX, INT_MAX };
+//
+//	if (isGoingUp) {
+//		changeOfPacmanNumberX -= 2;
+//		changeOfPacmanNumberY -= 2;
+//	}
+//	checkDirectionsAvailability(ghostCurX, ghostCurY, distance, changeOfPacmanNumberX, changeOfPacmanNumberY, blueLastX, blueLastY);
+//	ghostChangePosition(ghostCurX, ghostCurY, nextX, nextY, distance, inkyNumber, inkySymbol, blueColor, blueLastX, blueLastY);
+//}
+
 
 void activateRedGhost() {
-	shortestPathAlgorithmRed(blinkyNumber);
-	//normal search
+	shortestPathAlgorithmRed();
 }
 void activatePinkGhost() {
-	//shortestPathAlgorithm(pinkyNumber);
-	// 4 in front of pacman and 4 tothe left
+	shortestPathAlgorithmPink();
 }
 void activateBlueGhost() {
-	//shortestPathAlgorithm(inkyNumber);
-	// 2 in fron and 2 to  the left from pacman
+	shortestPathAlgorithmBlue();
 }
 void activateGreenGhost() {
 	//shortestPathAlgorithm(clydeNumber);
@@ -545,15 +636,21 @@ void activateGhosts() {
 	if (playerScore >= scoreToActivtRed) {
 		activateRedGhost();
 	}
-	/*if (playerScore >= scoreToActivtPink) {
+	if (playerScore >= scoreToActivtPink) {
 		activatePinkGhost();
 	}
+	
 	if (playerScore >= scoreToActivtBlue) {
 		activateBlueGhost();
 	}
+	/*
 	if (playerScore >= scoreToActivtGreen) {
 		activateGreenGhost();
 	}*/
+	isGoingDown = false;
+	isGoingUp = false;
+	isGoingRight = false;
+	isGoingLeft = false;
 }
 
 
