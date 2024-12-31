@@ -27,6 +27,7 @@ const size_t clydeNumber = 3;
 
 const char* redColor = "\033[31m";
 const char* pinkColor = "\033[35m";
+const char* cyanColor = "\033[36m";
 const char* blueColor = "\033[34m";
 const char* greenColor = "\033[32m";
 const char* yellowColor = "\033[33m";
@@ -37,9 +38,10 @@ const size_t scoreToActivtPink = 20;
 const size_t scoreToActivtBlue = 40;
 const size_t scoreToActivtGreen = 60;
 
-const size_t foodAmount = 3;
+const size_t foodAmount = 4;
 const size_t prizeOfFood = 20;
-const size_t prizeOfPoint = 2;
+const size_t prizeOfPoint = 1;
+size_t collectedAmountOfFood = 0;
 
 bool isGoingLeft = false;
 bool isGoingRight = false;
@@ -48,8 +50,8 @@ bool isGoingDown = false;
 
 int foodX[foodAmount], foodY[foodAmount];
 bool isGhostRemovable = false;
-bool isNormalMode = true;
-bool isChaseMode = false;
+bool isChaseMode = true;
+bool isFrightenedMode = false;
 const size_t wallsIncl = 2;
 int redLastX = -1;
 int redLastY = -1;
@@ -57,6 +59,10 @@ int pinkLastX = -1;
 int pinkLastY = -1;
 int blueLastX = -1;
 int blueLastY = -1;
+int greenLastX = -1;
+int greenLastY = -1;
+
+size_t frightenedModeCount = 0;
 char lastSymbol[amountOfGhosts] = { ' ',' ',' ',' ' };
 char** grid = nullptr;
 int widthGrid = 0, heightGrid = 0;
@@ -268,6 +274,10 @@ bool isAllFoodCollected() {
 	return true;
 }
 
+bool isPlayerCollectedAllFood() {
+	return (collectedAmountOfFood == 4);
+}
+
 //check for collision with ghost
 bool isPacmanCaughtByGhost() {
 	for (size_t i = 0; i < amountOfGhosts; i++)
@@ -282,7 +292,7 @@ bool isPacmanCaughtByGhost() {
 
 //the game is not over untill the player collects the foods or collides with a ghost
 bool isGameOver() {
-	return isPacmanCaughtByGhost() || isAllFoodCollected();
+	return isPacmanCaughtByGhost() || (isAllFoodCollected() && isPlayerCollectedAllFood());
 }
 
 void enableFrightenedMode() {
@@ -300,7 +310,7 @@ void spawnFood() {
 		foodY[i] = foodYCur;
 		grid[foodYCur][foodXCur] = foodSymbol;
 		setConsoleCursorPosition(foodXCur * 2, foodYCur);
-		std::cout << foodSymbol;
+		std::cout << yellowColor << foodSymbol << endColor;
 	}
 }
 
@@ -315,7 +325,6 @@ void setScreenSize() {
 	//create a function that handels big matrix (consol handles to 30x30)
 }
 
-
 void spawnPacman() {
 	do {
 		pacmanX = rand() % (widthGrid - 2) + 1;
@@ -323,7 +332,7 @@ void spawnPacman() {
 	} while (grid[pacmanY][pacmanX] != pointSymbol);
 	grid[pacmanY][pacmanX] = pacmanSymbol;
 	setConsoleCursorPosition(pacmanX * 2, pacmanY);  // Adjust cursor for spacing
-	std::cout << pacmanSymbol;
+	std::cout << yellowColor << pacmanSymbol << endColor;
 }
 
 void updateGridCell(int x, int y, char symbol) {
@@ -350,6 +359,9 @@ void setPacmanPosition() {
 void movePacmanInDirection(int movingX, int movingY, char nextSymbol) {
 	if (isFoodEaten(nextSymbol)) {
 		updateScore(prizeOfFood);
+		collectedAmountOfFood++;
+		isFrightenedMode = true;
+		isChaseMode = false;
 	}
 	else if (isPointEaten(nextSymbol)) {
 		updateScore(prizeOfPoint);
@@ -361,7 +373,6 @@ void movePacmanInDirection(int movingX, int movingY, char nextSymbol) {
 	setPacmanPosition();
 	updatePacmanGridPosition();
 }
-
 
 void movePacmanUp() {
 	if (grid[pacmanY - 1][pacmanX] != wallSymbol) {
@@ -454,7 +465,7 @@ void spawnGhost() {
 
 	repaintGhost(blinkyNumber, redColor);  // Red for Blinky
 	repaintGhost(pinkyNumber, pinkColor);  // Pink for Pinky
-	repaintGhost(inkyNumber, blueColor);  // Blue for Inky
+	repaintGhost(inkyNumber, cyanColor);  // Blue for Inky
 	repaintGhost(clydeNumber, greenColor);  // Green for Clyde
 }
 
@@ -464,15 +475,20 @@ void eraseGhostFromOldPosition(int ghostNumber) {
 	char previousSymbol = lastSymbol[ghostNumber];
 	if (previousSymbol == foodSymbol) {
 		grid[y][x] = foodSymbol;
+		setConsoleCursorPosition(x * 2, y);
+		std::cout << yellowColor << grid[y][x] << endColor;
 	}
 	else if (previousSymbol == pointSymbol) {
 		grid[y][x] = pointSymbol;
+		setConsoleCursorPosition(x * 2, y);
+		std::cout << grid[y][x];
 	}
 	else if (previousSymbol == emptySymbol) {
 		grid[y][x] = emptySymbol;
+		setConsoleCursorPosition(x * 2, y);
+		std::cout << grid[y][x];
 	}
-	setConsoleCursorPosition(x * 2, y);
-	std::cout << grid[y][x];
+
 }
 
 
@@ -560,6 +576,85 @@ void checkDirectionsAvailability(int ghostCurX, int ghostCurY, int distance[], i
 		distance[3] = distanceToPacman(ghostCurX + 1, ghostCurY, changeX, changeY);
 	}
 }
+
+void randomMoves(int ghostCurX, int ghostCurY, int lastX, int lastY, int ghostNumber, char ghostSymbol, const char* color) {
+	int randomWay;
+	bool isValid = false;
+	while (!isValid) {
+		randomWay = rand() % 4;
+		switch (randomWay) {
+		case 0:
+			isValid = isDirectionUpClear(ghostCurX, ghostCurY, lastX, lastY);
+			if (isValid) moveGhostTo(ghostCurX, ghostCurY - 1, ghostNumber, ghostSymbol, color);
+			break;
+		case 1:
+			isValid = isDirectionDownClear(ghostCurX, ghostCurY, lastX, lastY);
+			if (isValid) moveGhostTo(ghostCurX, ghostCurY + 1, ghostNumber, ghostSymbol, color);
+			break;
+		case 2:
+			isValid = isDirectionRightClear(ghostCurX, ghostCurY, lastX, lastY);
+			if (isValid) moveGhostTo(ghostCurX + 1, ghostCurY, ghostNumber, ghostSymbol, color);
+			break;
+		case 3:
+			isValid = isDirectionLeftClear(ghostCurX, ghostCurY, lastX, lastY);
+			if (isValid) moveGhostTo(ghostCurX - 1, ghostCurY, ghostNumber, ghostSymbol, color);
+			break;
+		}
+	}
+}
+
+void frightenedModeActivated(int ghostCurX, int ghostCurY, int lastX, int lastY, int ghostNumber, char ghostSymbol, const char* color) {
+	randomMoves(ghostCurX, ghostCurY, lastX, lastY, ghostNumber, ghostSymbol, color);
+	repaintGhost(ghostNumber, blueColor);
+}
+	
+void frightenedModeGhosts() {
+	int curAmountOfGhosts = 0;
+	if (playerScore >= scoreToActivtRed) {
+		curAmountOfGhosts = 1;
+	}
+	if (playerScore >= scoreToActivtPink) {
+		curAmountOfGhosts = 2;
+	}
+	if (playerScore >= scoreToActivtBlue) {
+		curAmountOfGhosts = 3;
+	}
+	if (playerScore >= scoreToActivtGreen) {
+		curAmountOfGhosts = 4;
+	}
+
+	for (int i = 0; i < curAmountOfGhosts; i++) {
+		int curGhostX = getGhostXPosition(i);
+		int curGhostY = getGhostYPosition(i);
+		int lastXCur = 0;
+		int lastYCur = 0;
+		switch (i) {
+		case 0:
+			lastXCur = redLastX;
+			lastYCur = redLastY;
+			frightenedModeActivated(curGhostX, curGhostY, lastXCur, lastYCur, i, blinkySymbol, redColor);
+			break;
+		case 1:
+			lastXCur = pinkLastX;
+			lastYCur = pinkLastY;
+			frightenedModeActivated(curGhostX, curGhostY, lastXCur, lastYCur, i, pinkySymbol, pinkColor);
+			break;
+		case 2:
+			lastXCur = blueLastX;
+			lastYCur = blueLastY;
+			frightenedModeActivated(curGhostX, curGhostY, lastXCur, lastYCur, i, inkySymbol, blueColor);
+			break;
+		case 3:
+			lastXCur = greenLastX;
+			lastYCur = greenLastY;
+			frightenedModeActivated(curGhostX, curGhostY, lastXCur, lastYCur, i, clydeSymbol, greenColor);
+			break;
+		}
+
+	}
+
+}
+
 //red algorithm
 void shortestPathAlgorithmRed() {
 	int ghostCurX = getGhostXPosition(blinkyNumber);
@@ -598,7 +693,7 @@ void shortestPathAlgorithmPink() {
 	checkDirectionsAvailability(ghostCurX, ghostCurY, distance, changeOfPacmanNumberX, changeOfPacmanNumberY, pinkLastX, pinkLastY);
 	ghostChangePosition(ghostCurX, ghostCurY, nextX, nextY, distance, pinkyNumber, pinkySymbol, pinkColor, pinkLastX, pinkLastY);
 }
-
+//blue algorithm
 void shortestPathAlgorithmBlue() {
 	int ghostCurX = getGhostXPosition(inkyNumber);
 	int ghostCurY = getGhostYPosition(inkyNumber);
@@ -632,9 +727,30 @@ void shortestPathAlgorithmBlue() {
 
 	checkDirectionsAvailability(ghostCurX, ghostCurY, distance, inkyTargetX, inkyTargetY, blueLastX, blueLastY);
 	// Move Inky based on the smallest distance (best direction)
-	ghostChangePosition(ghostCurX, ghostCurY, nextX, nextY, distance, inkyNumber, inkySymbol, blueColor, blueLastX, blueLastY);
+	ghostChangePosition(ghostCurX, ghostCurY, nextX, nextY, distance, inkyNumber, inkySymbol, cyanColor, blueLastX, blueLastY);
 }
-
+//green algorithm
+void shortestPathAlgorithmGreen() {
+	int ghostCurX = getGhostXPosition(clydeNumber);
+	int ghostCurY = getGhostYPosition(clydeNumber);
+	if (distanceToPacman(ghostCurX, ghostCurY, 0, 0) < 8) {
+		int nextX = ghostCurX;
+		int nextY = ghostCurY;
+		int distance[4] = { INT_MAX, INT_MAX, INT_MAX, INT_MAX };
+		checkDirectionsAvailability(ghostCurX, ghostCurY, distance, 0, 0, greenLastX, greenLastY);
+		ghostChangePosition(ghostCurX, ghostCurY, nextX, nextY, distance, clydeNumber, clydeSymbol, greenColor, greenLastX, greenLastY);
+	}
+	else if (distanceToPacman(ghostCurX, ghostCurY, 0, 0) >= 8) {
+		// Scatter mode: Move toward the bottom-left corner
+		const int scatterTargetX = 2;
+		const int scatterTargetY = heightGrid - 2;
+		int nextX = ghostCurX;
+		int nextY = ghostCurY;
+		int distance[4] = { INT_MAX, INT_MAX, INT_MAX, INT_MAX };
+		checkDirectionsAvailability(ghostCurX, ghostCurY, distance, scatterTargetX, scatterTargetY, greenLastX, greenLastY);
+		ghostChangePosition(ghostCurX, ghostCurY, nextX, nextY, distance, clydeNumber, clydeSymbol, greenColor, greenLastX, greenLastY);
+	}
+}
 
 
 void activateRedGhost() {
@@ -647,8 +763,7 @@ void activateBlueGhost() {
 	shortestPathAlgorithmBlue();
 }
 void activateGreenGhost() {
-	//shortestPathAlgorithm(clydeNumber);
-	//>=8 distance same as Red but <8
+	shortestPathAlgorithmGreen();
 }
 
 void activateGhosts() {
@@ -662,16 +777,46 @@ void activateGhosts() {
 	if (playerScore >= scoreToActivtBlue) {
 		activateBlueGhost();
 	}
-	/*
 	if (playerScore >= scoreToActivtGreen) {
 		activateGreenGhost();
-	}*/
+	}
+
+	//pacman movment direction reset
 	isGoingDown = false;
 	isGoingUp = false;
 	isGoingRight = false;
 	isGoingLeft = false;
 }
 
+void runGameLoop() {
+	while (!isGameOver()) {
+		if (isChaseMode) {
+			activateGhosts();
+			handlePacmanMovement();
+			displayPlayerScore();
+			Sleep(125);
+		}
+		else if (isFrightenedMode) {
+			frightenedModeGhosts();
+			handlePacmanMovement();
+			displayPlayerScore();
+			Sleep(125);
+			if (frightenedModeCount == 10) {
+				isFrightenedMode = false;
+				isChaseMode = true;
+				frightenedModeCount = 0;
+			}
+			frightenedModeCount++;
+		}
+	}
+	Sleep(600);
+	showGameOverScreen();
+}
+
+void waitForGameStart() {
+	Sleep(3000);
+	runGameLoop();
+}
 
 void InitializeGame() {
 	hideConsoleCursor();
@@ -682,23 +827,12 @@ void InitializeGame() {
 	spawnGhost();
 	spawnPacman();
 	spawnFood();
-}
-
-void runGameLoop() {
-	while (!isGameOver()) {
-		activateGhosts();
-		handlePacmanMovement();
-		displayPlayerScore();
-		Sleep(125);
-	}
-	Sleep(600);
-	showGameOverScreen();
+	waitForGameStart();
 }
 
 //the function calls the game
 void startPacmanGame() {
 	InitializeGame();
-	runGameLoop();
 }
 
 int main() {
