@@ -280,12 +280,15 @@ bool isPlayerCollectedAllFood() {
 
 //check for collision with ghost
 bool isPacmanCaughtByGhost() {
-	for (size_t i = 0; i < amountOfGhosts; i++)
-	{
-		if (ghostX[i] == pacmanX && ghostY[i] == pacmanY)
+	if (isChaseMode) {
+		for (size_t i = 0; i < amountOfGhosts; i++)
 		{
-			return  true;
+			if (ghostX[i] == pacmanX && ghostY[i] == pacmanY)
+			{
+				return  true;
+			}
 		}
+		return false;
 	}
 	return false;
 }
@@ -457,7 +460,6 @@ void spawnGhost() {
 	setGhostPosition(2, 1, inkyNumber);  // Inky
 	setGhostPosition(3, 1, clydeNumber);  // Clyde
 
-
 	grid[ghostY[0]][ghostX[0]] = blinkySymbol;
 	grid[ghostY[1]][ghostX[1]] = pinkySymbol;
 	grid[ghostY[2]][ghostX[2]] = inkySymbol;
@@ -468,6 +470,8 @@ void spawnGhost() {
 	repaintGhost(inkyNumber, cyanColor);  // Blue for Inky
 	repaintGhost(clydeNumber, greenColor);  // Green for Clyde
 }
+
+
 
 void eraseGhostFromOldPosition(int ghostNumber) {
 	int x = getGhostXPosition(ghostNumber);
@@ -576,8 +580,41 @@ void checkDirectionsAvailability(int ghostCurX, int ghostCurY, int distance[], i
 		distance[3] = distanceToPacman(ghostCurX + 1, ghostCurY, changeX, changeY);
 	}
 }
+//returns the number of the ghost that is collided with or -1 if is not chaught
+int isGhostEatenByPacman() {
+	int index = -1;
+	for (size_t i = 0; i < amountOfGhosts; i++)
+	{
+		if (getGhostXPosition(i) == pacmanX && getGhostYPosition(i) == pacmanY) {
+			return i;
+		}
+	}
+	return index;
+}
+void sendGhostToCorner(int ghostNumber) {
+	switch (ghostNumber)
+	{
+	case 0:
+		moveGhostTo(1, widthGrid - 2, 0, blinkyNumber, redColor);
+		break;
+	case 1:
+		moveGhostTo(2, 1, 1, pinkyNumber, pinkColor);
+		break;
+	case 2:
+		moveGhostTo(heightGrid - 2, widthGrid - 2, 2, inkyNumber, blueColor);
+		break;
+	case 3:
+		moveGhostTo(heightGrid - 2, 1, 3, clydeNumber, greenColor);
+		break;
+	}
+}
 
 void randomMoves(int ghostCurX, int ghostCurY, int lastX, int lastY, int ghostNumber, char ghostSymbol, const char* color) {
+	int eatenGhost = isGhostEatenByPacman();
+	if (eatenGhost != -1) {
+		sendGhostToCorner(eatenGhost); 
+		return;  
+	}
 	int randomWay;
 	bool isValid = false;
 	while (!isValid) {
@@ -599,6 +636,10 @@ void randomMoves(int ghostCurX, int ghostCurY, int lastX, int lastY, int ghostNu
 			isValid = isDirectionLeftClear(ghostCurX, ghostCurY, lastX, lastY);
 			if (isValid) moveGhostTo(ghostCurX - 1, ghostCurY, ghostNumber, ghostSymbol, color);
 			break;
+		default:
+			isValid = true;
+			moveGhostTo(ghostCurX, ghostCurY, ghostNumber, ghostSymbol, color);
+			break;
 		}
 	}
 }
@@ -607,7 +648,7 @@ void frightenedModeActivated(int ghostCurX, int ghostCurY, int lastX, int lastY,
 	randomMoves(ghostCurX, ghostCurY, lastX, lastY, ghostNumber, ghostSymbol, color);
 	repaintGhost(ghostNumber, blueColor);
 }
-	
+
 void frightenedModeGhosts() {
 	int curAmountOfGhosts = 0;
 	if (playerScore >= scoreToActivtRed) {
@@ -650,9 +691,7 @@ void frightenedModeGhosts() {
 			frightenedModeActivated(curGhostX, curGhostY, lastXCur, lastYCur, i, clydeSymbol, greenColor);
 			break;
 		}
-
 	}
-
 }
 
 //red algorithm
@@ -693,6 +732,7 @@ void shortestPathAlgorithmPink() {
 	checkDirectionsAvailability(ghostCurX, ghostCurY, distance, changeOfPacmanNumberX, changeOfPacmanNumberY, pinkLastX, pinkLastY);
 	ghostChangePosition(ghostCurX, ghostCurY, nextX, nextY, distance, pinkyNumber, pinkySymbol, pinkColor, pinkLastX, pinkLastY);
 }
+
 //blue algorithm
 void shortestPathAlgorithmBlue() {
 	int ghostCurX = getGhostXPosition(inkyNumber);
@@ -796,18 +836,21 @@ void runGameLoop() {
 			displayPlayerScore();
 			Sleep(125);
 		}
-		else if (isFrightenedMode) {
+		if (isFrightenedMode) {
 			frightenedModeGhosts();
 			handlePacmanMovement();
 			displayPlayerScore();
 			Sleep(125);
-			if (frightenedModeCount == 10) {
+			frightenedModeCount++;
+			if (frightenedModeCount == 30) {
 				isFrightenedMode = false;
 				isChaseMode = true;
 				frightenedModeCount = 0;
+				continue;
 			}
-			frightenedModeCount++;
 		}
+
+
 	}
 	Sleep(600);
 	showGameOverScreen();
@@ -839,3 +882,6 @@ int main() {
 	startPacmanGame();
 	return 0;
 }
+
+// fix the frightened mode;
+//problems when bringing ghost to the cage check where is empty (you might put two ghost in the same cell)
