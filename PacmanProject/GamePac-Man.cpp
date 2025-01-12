@@ -3,69 +3,25 @@
 #include <ctime>
 #include <windows.h> 
 #include <fstream>
+#include "Pacman.h"
+#include "map.h"
+#include "RedGhost.h"
+#include "BlueGhost.h"
+#include "GreenGhost.h"
+#include "PinkGhost.h"
+#include "GameParameters.h"
 
-int pacmanX, pacmanY;
-size_t playerScore = 0;
-
-const char pacmanSymbol = 'P';
-const char wallSymbol = '#';
-const char foodSymbol = '@';
-const char pointSymbol = '.';
-const char emptySymbol = ' ';
-
-const size_t amountOfGhosts = 4;
 int ghostX[amountOfGhosts], ghostY[amountOfGhosts];
-const char blinkySymbol = 'B';
-const char pinkySymbol = 'Y';
-const char inkySymbol = 'I';
-const char clydeSymbol = 'C';
-
-const size_t blinkyNumber = 0;
-const size_t pinkyNumber = 1;
-const size_t inkyNumber = 2;
-const size_t clydeNumber = 3;
-
-const char* redColor = "\033[31m";
-const char* pinkColor = "\033[35m";
-const char* cyanColor = "\033[36m";
-const char* blueColor = "\033[34m";
-const char* greenColor = "\033[32m";
-const char* yellowColor = "\033[33m";
-const char* endColor = "\033[0m";
-
-const size_t scoreToActivtRed = 0;
-const size_t scoreToActivtPink = 20;
-const size_t scoreToActivtBlue = 40;
-const size_t scoreToActivtGreen = 60;
-
-const size_t foodAmount = 4;
-const size_t prizeOfFood = 20;
-const size_t prizeOfPoint = 1;
-size_t collectedAmountOfFood = 0;
-
-bool isGoingLeft = false;
-bool isGoingRight = false;
-bool isGoingUp = false;
-bool isGoingDown = false;
-
 int foodX[foodAmount], foodY[foodAmount];
-bool isGhostRemovable = false;
+char lastSymbol[amountOfGhosts] = { ' ',' ',' ',' ' };
+const size_t wallsIncl = 2;
+const char* blueColor = "\033[34m";
+const char* endColor = "\033[0m";
+size_t collectedAmountOfFood = 0;
+size_t frightenedModeCount = 0;
 bool isChaseMode = true;
 bool isFrightenedMode = false;
-const size_t wallsIncl = 2;
-int redLastX = -1;
-int redLastY = -1;
-int pinkLastX = -1;
-int pinkLastY = -1;
-int blueLastX = -1;
-int blueLastY = -1;
-int greenLastX = -1;
-int greenLastY = -1;
 
-size_t frightenedModeCount = 0;
-char lastSymbol[amountOfGhosts] = { ' ',' ',' ',' ' };
-char** grid = nullptr;
-int widthGrid = 0, heightGrid = 0;
 std::ifstream file("map.txt");
 
 void setConsoleCursorPosition(int x, int y) {
@@ -298,9 +254,6 @@ bool isGameOver() {
 	return isPacmanCaughtByGhost() || (isAllFoodCollected() && isPlayerCollectedAllFood());
 }
 
-void enableFrightenedMode() {
-	isGhostRemovable = true;
-}
 void spawnFood() {
 	for (int i = 0; i < foodAmount; i++) {
 		int foodYCur = 0;
@@ -583,7 +536,7 @@ void checkDirectionsAvailability(int ghostCurX, int ghostCurY, int distance[], i
 //returns the number of the ghost that is collided with or -1 if is not chaught
 int isGhostEatenByPacman() {
 	int index = -1;
-	for (size_t i = 0; i < amountOfGhosts; i++)
+	for (int i = 0; i < amountOfGhosts; i++)
 	{
 		if (getGhostXPosition(i) == pacmanX && getGhostYPosition(i) == pacmanY) {
 			return i;
@@ -829,6 +782,7 @@ void activateGhosts() {
 }
 
 void runGameLoop() {
+
 	while (!isGameOver()) {
 		if (isChaseMode) {
 			activateGhosts();
@@ -863,7 +817,7 @@ void waitForGameStart() {
 
 void InitializeGame() {
 	hideConsoleCursor();
-	srand(time(0));
+	srand((unsigned int)time(0));
 	initializeGridDimensions();
 	loadMapFromFile();
 	renderGrid();

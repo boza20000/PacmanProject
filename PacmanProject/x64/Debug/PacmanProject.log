@@ -1,6 +1,2 @@
-﻿  PacmanProject.cpp
-C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\PacmanProject.cpp(588,25): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\PacmanProject.cpp(588,60): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\PacmanProject.cpp(589,11): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\PacmanProject.cpp(866,12): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+﻿  GamePac-Man.cpp
   PacmanProject.vcxproj -> C:\Users\bobi_\source\repos\PacmanProject\x64\Debug\PacmanProject.exe

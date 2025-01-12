@@ -127,13 +127,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="PacmanProject.cpp" />
+    <ClCompile Include="GameParameters.h" />
+    <ClCompile Include="GamePac-Man.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="map.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="PacmanProject.h" />
+    <ClInclude Include="BlueGhost.h" />
+    <ClInclude Include="GreenGhost.h" />
+    <ClInclude Include="map.h" />
+    <ClInclude Include="Pacman.h" />
+    <ClInclude Include="PinkGhost.h" />
+    <ClInclude Include="RedGhost.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
