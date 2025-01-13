@@ -1,3 +1,4 @@
+#pragma once
 const char pinkySymbol = 'Y';
 const size_t pinkyNumber = 1;
 const char* pinkColor = "\033[35m";

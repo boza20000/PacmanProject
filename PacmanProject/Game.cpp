@@ -9,8 +9,11 @@
 #include "BlueGhost.h"
 #include "GreenGhost.h"
 #include "PinkGhost.h"
-#include "GameParameters.h"
 
+const size_t amountOfGhosts = 4;
+const size_t foodAmount = 4;
+const size_t prizeOfFood = 20;
+const size_t prizeOfPoint = 1;
 int ghostX[amountOfGhosts], ghostY[amountOfGhosts];
 int foodX[foodAmount], foodY[foodAmount];
 char lastSymbol[amountOfGhosts] = { ' ',' ',' ',' ' };
@@ -21,7 +24,6 @@ size_t collectedAmountOfFood = 0;
 size_t frightenedModeCount = 0;
 bool isChaseMode = true;
 bool isFrightenedMode = false;
-
 std::ifstream file("map.txt");
 
 void setConsoleCursorPosition(int x, int y) {
@@ -50,24 +52,16 @@ void resizeConsole(int height, int width) {
 
 void centerConsole() {
 	RECT screenRect;
-	GetWindowRect(GetDesktopWindow(), &screenRect); // Get the desktop window dimensions
+	GetWindowRect(GetDesktopWindow(), &screenRect);
 	int screenWidth = screenRect.right - screenRect.left;
 	int screenHeight = screenRect.bottom - screenRect.top;
-
-	// Step 2: Get the current console window handle
 	HWND consoleWindow = GetConsoleWindow();
-
-	// Step 3: Get the console window's size (width and height)
 	RECT consoleRect;
 	GetWindowRect(consoleWindow, &consoleRect);
 	int consoleWidth = consoleRect.right - consoleRect.left;
 	int consoleHeight = consoleRect.bottom - consoleRect.top;
-
-	// Step 4: Calculate the position to center the console window
 	int xPos = (screenWidth - consoleWidth) / 2 - 10;
 	int yPos = (screenHeight - consoleHeight) / 2;
-
-	// Step 5: Move the console window to the calculated position
 	MoveWindow(consoleWindow, xPos, yPos, consoleWidth, consoleHeight, TRUE);
 }
 
@@ -92,10 +86,9 @@ void freeGridMemory() {
 }
 
 void skipLineInFile() {
-	file.ignore(std::streamsize(INT_MAX), '\n'); // Skip to the next line
+	file.ignore(std::streamsize(INT_MAX), '\n');
 }
 
-//put walls over the sides that are cut 
 void addBoundaryWalls() {
 
 	for (size_t i = 0; i < heightGrid; i++)
@@ -110,7 +103,6 @@ void addBoundaryWalls() {
 
 }
 
-//gest the map from a file with the height and width that the user inputed
 void loadMapFromFile() {
 	if (!file) {
 		std::cerr << "Error: Could not open file" << std::endl;
@@ -130,7 +122,6 @@ void loadMapFromFile() {
 	addBoundaryWalls();
 }
 
-//displayes the map 
 void renderGrid() {
 	for (int i = 0; i < heightGrid; ++i) {
 		for (int j = 0; j < widthGrid; ++j) {
@@ -152,7 +143,6 @@ void prepareConsoleForGame() {
 	clearConsole();
 }
 
-//starts the game and waits for grid paremeters
 void initializeGridDimensions() {
 	std::cout << "Grid dimensions must be positive integers over 10 under 50(incl.)\nwith difference betwen the parameters less than 10 " << std::endl << std::endl;
 	std::cout << "Enter grid width: ";
@@ -166,17 +156,14 @@ void initializeGridDimensions() {
 		std::exit(1);
 	}
 
-	//handles the case where no bounderies requiered
 	if (widthGrid < 49 || heightGrid < 49) {
 		widthGrid += wallsIncl;
 		heightGrid += wallsIncl;
 	}
 
-	//prepares the basic requirments for the console to look good for the game
 	prepareConsoleForGame();
 }
 
-//waits for keystrock to end the game
 void waitForGameExit() {
 	while (true) {
 		for (int key = 0x08; key <= 0xFE; ++key) {
@@ -189,19 +176,16 @@ void waitForGameExit() {
 	}
 }
 
-//visualises the player score
 void displayPlayerScore() {
 	setConsoleCursorPosition(widthGrid * 2 + 1, heightGrid / 2);
 	std::cout << "Score: " << playerScore << "  ";
 }
 
-//updates score of the player
 void updateScore(int points) {
 	playerScore += points;
 	displayPlayerScore();
 }
 
-//game over screen
 void showGameOverScreen() {
 	clearConsole();
 	std::cout << R"(
@@ -220,7 +204,6 @@ void showGameOverScreen() {
 	waitForGameExit();
 }
 
-//check whether all food is collected
 bool isAllFoodCollected() {
 	for (size_t i = 0; i < foodAmount; i++) {
 		if (grid[foodY[i]][foodX[i]] == foodSymbol) {
@@ -234,7 +217,6 @@ bool isPlayerCollectedAllFood() {
 	return (collectedAmountOfFood == 4);
 }
 
-//check for collision with ghost
 bool isPacmanCaughtByGhost() {
 	if (isChaseMode) {
 		for (size_t i = 0; i < amountOfGhosts; i++)
@@ -249,7 +231,6 @@ bool isPacmanCaughtByGhost() {
 	return false;
 }
 
-//the game is not over untill the player collects the foods or collides with a ghost
 bool isGameOver() {
 	return isPacmanCaughtByGhost() || (isAllFoodCollected() && isPlayerCollectedAllFood());
 }
@@ -277,23 +258,19 @@ bool isPointEaten(char ch) {
 	return ch == pointSymbol;
 }
 
-void setScreenSize() {
-	//create a function that handels big matrix (consol handles to 30x30)
-}
-
 void spawnPacman() {
 	do {
 		pacmanX = rand() % (widthGrid - 2) + 1;
 		pacmanY = rand() % (heightGrid - 2) + 1;
 	} while (grid[pacmanY][pacmanX] != pointSymbol);
 	grid[pacmanY][pacmanX] = pacmanSymbol;
-	setConsoleCursorPosition(pacmanX * 2, pacmanY);  // Adjust cursor for spacing
+	setConsoleCursorPosition(pacmanX * 2, pacmanY);
 	std::cout << yellowColor << pacmanSymbol << endColor;
 }
 
 void updateGridCell(int x, int y, char symbol) {
-	setConsoleCursorPosition(x * 2, y);  // Adjust cursor for grid spacing
-	std::cout << yellowColor << symbol << endColor;  // Update only the specified cell
+	setConsoleCursorPosition(x * 2, y);
+	std::cout << yellowColor << symbol << endColor;
 }
 void erasePacmanFromOldPosition() {
 	updateGridCell(pacmanX, pacmanY, emptySymbol);
@@ -310,7 +287,6 @@ void clearPacmanPreviousCell() {
 void setPacmanPosition() {
 	grid[pacmanY][pacmanX] = pacmanSymbol;
 }
-
 
 void movePacmanInDirection(int movingX, int movingY, char nextSymbol) {
 	if (isFoodEaten(nextSymbol)) {
@@ -336,7 +312,6 @@ void movePacmanUp() {
 		movePacmanInDirection(0, -1, nextSymbol);
 	}
 }
-
 
 void movePacmanDown() {
 	if (grid[pacmanY + 1][pacmanX] != wallSymbol) {
@@ -405,9 +380,6 @@ void repaintGhost(int ghostNumber, const char* color) {
 }
 
 void spawnGhost() {
-
-	//starting coords
-	//put in array for ghosts
 	setGhostPosition(1, 2, blinkyNumber);  // Blinky
 	setGhostPosition(1, 1, pinkyNumber);  // Pinky
 	setGhostPosition(2, 1, inkyNumber);  // Inky
@@ -445,9 +417,7 @@ void eraseGhostFromOldPosition(int ghostNumber) {
 		setConsoleCursorPosition(x * 2, y);
 		std::cout << grid[y][x];
 	}
-
 }
-
 
 void moveGhostTo(int x, int y, int ghostNumber, char symbol, const char* color) {
 	eraseGhostFromOldPosition(ghostNumber);
@@ -456,6 +426,7 @@ void moveGhostTo(int x, int y, int ghostNumber, char symbol, const char* color) 
 	grid[y][x] = symbol;
 	repaintGhost(ghostNumber, color);
 }
+
 bool isCollidedWithGhost(int x, int y) {
 	for (size_t i = 0; i < amountOfGhosts; i++) {
 		if (x == ghostX[i] && y == ghostY[i]) {
@@ -464,21 +435,25 @@ bool isCollidedWithGhost(int x, int y) {
 	}
 	return false;
 }
+
 bool isDirectionUpClear(int ghostCurX, int ghostCurY, int lastX, int lastY) {
 	return (grid[ghostCurY - 1][ghostCurX] != wallSymbol
 		&& ((ghostCurY - 1) != lastY || ghostCurX != lastX)
 		&& !isCollidedWithGhost(ghostCurX, ghostCurY - 1));
 }
+
 bool isDirectionLeftClear(int ghostCurX, int ghostCurY, int lastX, int lastY) {
 	return (grid[ghostCurY][ghostCurX - 1] != wallSymbol
 		&& (ghostCurY != lastY || (ghostCurX - 1) != lastX)
 		&& !isCollidedWithGhost(ghostCurX - 1, ghostCurY));
 }
+
 bool isDirectionRightClear(int ghostCurX, int ghostCurY, int lastX, int lastY) {
 	return (grid[ghostCurY][ghostCurX + 1] != wallSymbol
 		&& ((ghostCurY) != lastY || (ghostCurX + 1) != lastX)
 		&& !isCollidedWithGhost(ghostCurX + 1, ghostCurY));
 }
+
 bool isDirectionDownClear(int ghostCurX, int ghostCurY, int lastX, int lastY) {
 	return (grid[ghostCurY + 1][ghostCurX] != wallSymbol
 		&& ((ghostCurY + 1) != lastY || (ghostCurX) != lastX)
@@ -489,7 +464,7 @@ int distanceToPacman(int ghostCurX, int ghostCurY, int changeX, int changeY) {
 	return abs(ghostCurX - (pacmanX + changeX)) + abs(ghostCurY - (pacmanY + changeY));
 }
 
-void ghostChangePosition(int ghostCurX, int ghostCurY, int nextX, int nextY, int distance[4], int ghostNumber, int symbol, const char* color, int& lastX, int& lastY) {
+void ghostChangePosition(int ghostCurX, int ghostCurY, int nextX, int nextY, int distance[4], int ghostNumber, int ghostSymbol, const char* color, int& lastX, int& lastY) {
 	int minDistance = INT_MAX;
 	int direction = -1;
 
@@ -499,7 +474,6 @@ void ghostChangePosition(int ghostCurX, int ghostCurY, int nextX, int nextY, int
 			direction = i;
 		}
 	}
-	// Update the next position based on the chosen direction
 	switch (direction) {
 	case 0: nextY = ghostCurY - 1; break; // Up
 	case 1: nextX = ghostCurX - 1; break; // Left
@@ -507,33 +481,29 @@ void ghostChangePosition(int ghostCurX, int ghostCurY, int nextX, int nextY, int
 	case 3: nextX = ghostCurX + 1; break; // Right
 	}
 
-	// Move the ghost to the new position
-	moveGhostTo(nextX, nextY, ghostNumber, symbol, color);
-
-	// Update the last position of the ghost
+	moveGhostTo(nextX, nextY, ghostNumber, ghostSymbol, color);
 	lastX = ghostCurX;
 	lastY = ghostCurY;
+
 }
 
 void checkDirectionsAvailability(int ghostCurX, int ghostCurY, int distance[], int changeX, int changeY, int lastX, int lastY) {
-	// Up
 	if (isDirectionUpClear(ghostCurX, ghostCurY, lastX, lastY)) {
 		distance[0] = distanceToPacman(ghostCurX, ghostCurY - 1, changeX, changeY);
 	}
-	// Left
 	if (isDirectionLeftClear(ghostCurX, ghostCurY, lastX, lastY)) {
 		distance[1] = distanceToPacman(ghostCurX - 1, ghostCurY, changeX, changeY);
 	}
-	// Down
 	if (isDirectionDownClear(ghostCurX, ghostCurY, lastX, lastY)) {
 		distance[2] = distanceToPacman(ghostCurX, ghostCurY + 1, changeX, changeY);
 	}
-	// Right
 	if (isDirectionRightClear(ghostCurX, ghostCurY, lastX, lastY)) {
 		distance[3] = distanceToPacman(ghostCurX + 1, ghostCurY, changeX, changeY);
 	}
+
 }
-//returns the number of the ghost that is collided with or -1 if is not chaught
+
+
 int isGhostEatenByPacman() {
 	int index = -1;
 	for (int i = 0; i < amountOfGhosts; i++)
@@ -544,10 +514,12 @@ int isGhostEatenByPacman() {
 	}
 	return index;
 }
+
 void sendGhostToCorner(int ghostNumber) {
 	switch (ghostNumber)
 	{
 	case 0:
+		//check for corner clearity
 		moveGhostTo(1, widthGrid - 2, 0, blinkyNumber, redColor);
 		break;
 	case 1:
@@ -562,11 +534,11 @@ void sendGhostToCorner(int ghostNumber) {
 	}
 }
 
-void randomMoves(int ghostCurX, int ghostCurY, int lastX, int lastY, int ghostNumber, char ghostSymbol, const char* color) {
+void randomGhostMoves(int ghostCurX, int ghostCurY, int lastX, int lastY, int ghostNumber, char ghostSymbol, const char* color) {
 	int eatenGhost = isGhostEatenByPacman();
 	if (eatenGhost != -1) {
-		sendGhostToCorner(eatenGhost); 
-		return;  
+		sendGhostToCorner(eatenGhost);
+		return;
 	}
 	int randomWay;
 	bool isValid = false;
@@ -598,12 +570,13 @@ void randomMoves(int ghostCurX, int ghostCurY, int lastX, int lastY, int ghostNu
 }
 
 void frightenedModeActivated(int ghostCurX, int ghostCurY, int lastX, int lastY, int ghostNumber, char ghostSymbol, const char* color) {
-	randomMoves(ghostCurX, ghostCurY, lastX, lastY, ghostNumber, ghostSymbol, color);
+	randomGhostMoves(ghostCurX, ghostCurY, lastX, lastY, ghostNumber, ghostSymbol, color);
 	repaintGhost(ghostNumber, blueColor);
 }
 
 void frightenedModeGhosts() {
 	int curAmountOfGhosts = 0;
+
 	if (playerScore >= scoreToActivtRed) {
 		curAmountOfGhosts = 1;
 	}

@@ -1,3 +1,4 @@
+#pragma once
 const char clydeSymbol = 'C';
 const size_t clydeNumber = 3;
 const char* greenColor = "\033[32m";

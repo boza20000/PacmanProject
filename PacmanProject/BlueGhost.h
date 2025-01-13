@@ -1,3 +1,4 @@
+#pragma once
 const char inkySymbol = 'I';
 const size_t inkyNumber = 2;
 

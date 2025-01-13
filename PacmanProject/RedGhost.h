@@ -1,3 +1,4 @@
+#pragma once
 const char blinkySymbol = 'B';
 const size_t blinkyNumber = 0;
 const char* redColor = "\033[31m";
