@@ -1,2 +1,3 @@
 ﻿  Game.cpp
+C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\Game.cpp(318,11): warning C4551: function call missing argument list
   PacmanProject.vcxproj -> C:\Users\bobi_\source\repos\PacmanProject\x64\Debug\PacmanProject.exe

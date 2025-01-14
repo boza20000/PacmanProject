@@ -24,6 +24,7 @@ size_t collectedAmountOfFood = 0;
 size_t frightenedModeCount = 0;
 bool isChaseMode = true;
 bool isFrightenedMode = false;
+bool cantMove = false;
 std::ifstream file("map.txt");
 
 void setConsoleCursorPosition(int x, int y) {
@@ -143,24 +144,67 @@ void prepareConsoleForGame() {
 	clearConsole();
 }
 
+bool isNumber(char* str) {
+	while (*str) {
+		if ((*str) < '0' || (*str) > '9') {
+			return false;
+		}
+		str++;
+	}
+	return true;
+}
+
+int toInt(char* str) {
+	int number = 0;
+	while (*str) {
+		number = number * 10 + (*str - '0');
+		str++;
+	}
+	return number;
+}
+
 void initializeGridDimensions() {
-	std::cout << "Grid dimensions must be positive integers over 10 under 50(incl.)\nwith difference betwen the parameters less than 10 " << std::endl << std::endl;
-	std::cout << "Enter grid width: ";
-	std::cin >> widthGrid;
-	std::cout << "Enter grid height: ";
-	std::cin >> heightGrid;
+	centerConsole();
+	const int ARRAY_SIZE = 100;
+	char number1[ARRAY_SIZE], number2[ARRAY_SIZE];
 
-	int diff = std::abs(widthGrid - heightGrid);
-	if (widthGrid < 10 || heightGrid < 10 || widthGrid > 50 || heightGrid > 50 || diff > 10) {
-		std::cerr << "Error: Grid dimensions must be positive integers over 10 under 50(incl.)\nwith difference betwen the parameters less than 10 " << std::endl;
-		std::exit(1);
+	while (true) {
+		std::cout << "Input number for the field of the game" << std::endl;
+		std::cout << "Enter grid width: ";
+		std::cin.getline(number1, ARRAY_SIZE);
+
+		std::cout << "Enter grid height: ";
+		std::cin.getline(number2, ARRAY_SIZE);
+
+		clearConsole();
+		if (!isNumber(number1) || !isNumber(number2)) {
+			std::cerr << "ERROR: Incorrect input, please enter numbers." << std::endl << std::endl;
+			continue;
+		}
+
+		widthGrid = toInt(number1);
+		heightGrid = toInt(number2);
+
+		int diff = std::abs(widthGrid - heightGrid);
+		if (widthGrid < 10 || heightGrid < 10 || widthGrid > 50 || heightGrid > 50) {
+			std::cerr << "ERROR: Grid dimensions must be positive integers over 10 and under 50 (inclusive) " << std::endl << std::endl;
+			continue;
+		}
+		if (diff > 10) {
+			std::cerr << "(height - width) should not be more than 10." << std::endl;
+			continue;
+		}
+
+		if (widthGrid <= 49) {
+			widthGrid += wallsIncl;
+		}
+
+		if (heightGrid <= 49) {
+			heightGrid += wallsIncl;
+		}
+
+		break;
 	}
-
-	if (widthGrid < 49 || heightGrid < 49) {
-		widthGrid += wallsIncl;
-		heightGrid += wallsIncl;
-	}
-
 	prepareConsoleForGame();
 }
 
@@ -186,16 +230,36 @@ void updateScore(int points) {
 	displayPlayerScore();
 }
 
-void showGameOverScreen() {
+void showLoseScreen() {
+	resizeConsole(20, 25);
 	clearConsole();
+	centerConsole();
 	std::cout << R"(
-  #####     #    #     # ######      ######  #          # ###### ######      #
- #     #   # #   ##   ## #          #      #  #        #  #      #     #     # 
- #        #   #  # # # # #          #      #   #      #   #      #     #     #
- #  #### #     # #  #  # ######     #      #    #    #    ###### #    #      #
- #     # ####### #     # #          #      #     #  #     #      ####        #
- #     # #     # #     # #          #      #     #  #     #      #   #        
-  #####  #     # #     # ######      ######       ##      ###### #     #     #
+ #     #  #####  #     #     #        ######    #######  #######    #
+  #   #  #     # #     #     #       #      #   #        #          #
+   # #   #     # #     #     #       #      #   ###      #          #
+    #    #     # #     #     #       #      #      ####  #######    #
+    #    #     # #     #     #       #      #         #  #     
+    #     #####   #####      #######  ######    #######  #######    # 
+    )" << std::endl;
+
+	std::cout << "\n\n          Your Final Score: " << playerScore << "\n\n";
+
+	std::cout << "   Press any key to exit the game...";
+	waitForGameExit();
+}
+
+void showWinScreen() {
+	resizeConsole(20, 25);
+	clearConsole();
+	centerConsole();
+	std::cout << R"(
+ #     #  #####  #     #     #      #  #######  ##    #    #
+  #   #  #     # #     #     #      #     #     # #   #    #
+   # #   #     # #     #     #  ##  #     #     #  #  #    # 
+    #    #     # #     #     # #  # #     #     #   # #    #
+    #    #     # #     #     ##    ##     #     #    ## 
+    #     #####   #####      #      #  #######  #     #    #
     )" << std::endl;
 
 	std::cout << "\n\n          Your Final Score: " << playerScore << "\n\n";
@@ -234,6 +298,28 @@ bool isPacmanCaughtByGhost() {
 bool isGameOver() {
 	return isPacmanCaughtByGhost() || (isAllFoodCollected() && isPlayerCollectedAllFood());
 }
+
+void showGameOverScreen() {
+	resizeConsole(20, 40);
+	clearConsole();
+	std::cout << R"(
+  ####       #      #      # #######      #####  #         # ####### #####    #
+ #    #     # #     ##    ## #           #     #  #       #  #       #    #   #
+ #         #   #    # #  # # #           #     #   #     #   #       #####    #
+ #  ###   #######   #  ##  # #######     #     #    #   #    ####### #   #    #
+ #    #  #       #  #      # #           #     #     # #     #       #    #   
+  ####  #         # #      # #######      #####       #      ####### #    #   #
+    )" << std::endl;
+
+	Sleep(1500);
+	if ((isAllFoodCollected() && isPlayerCollectedAllFood())) {
+		showWinScreen();
+	}
+	else if (isPacmanCaughtByGhost) {
+		showLoseScreen();
+	}
+}
+
 
 void spawnFood() {
 	for (int i = 0; i < foodAmount; i++) {
@@ -465,40 +551,53 @@ int distanceToPacman(int ghostCurX, int ghostCurY, int changeX, int changeY) {
 }
 
 void ghostChangePosition(int ghostCurX, int ghostCurY, int nextX, int nextY, int distance[4], int ghostNumber, int ghostSymbol, const char* color, int& lastX, int& lastY) {
-	int minDistance = INT_MAX;
-	int direction = -1;
+	if (cantMove) {
+		moveGhostTo(nextX, nextY, ghostNumber, ghostSymbol, color);
+		cantMove = false;
+	}
+	else {
+		int minDistance = INT_MAX;
+		int direction = -1;
 
-	for (int i = 0; i < 4; i++) {
-		if (distance[i] < minDistance) {
-			minDistance = distance[i];
-			direction = i;
+		for (int i = 0; i < 4; i++) {
+			if (distance[i] < minDistance) {
+				minDistance = distance[i];
+				direction = i;
+			}
 		}
-	}
-	switch (direction) {
-	case 0: nextY = ghostCurY - 1; break; // Up
-	case 1: nextX = ghostCurX - 1; break; // Left
-	case 2: nextY = ghostCurY + 1; break; // Down
-	case 3: nextX = ghostCurX + 1; break; // Right
-	}
+		switch (direction) {
+		case 0: nextY = ghostCurY - 1; break; // Up
+		case 1: nextX = ghostCurX - 1; break; // Left
+		case 2: nextY = ghostCurY + 1; break; // Down
+		case 3: nextX = ghostCurX + 1; break; // Right
+		}
 
-	moveGhostTo(nextX, nextY, ghostNumber, ghostSymbol, color);
-	lastX = ghostCurX;
-	lastY = ghostCurY;
-
+		moveGhostTo(nextX, nextY, ghostNumber, ghostSymbol, color);
+		lastX = ghostCurX;
+		lastY = ghostCurY;
+	}
 }
 
 void checkDirectionsAvailability(int ghostCurX, int ghostCurY, int distance[], int changeX, int changeY, int lastX, int lastY) {
+	int noDirectionClear = 4;
 	if (isDirectionUpClear(ghostCurX, ghostCurY, lastX, lastY)) {
 		distance[0] = distanceToPacman(ghostCurX, ghostCurY - 1, changeX, changeY);
+		noDirectionClear--;
 	}
 	if (isDirectionLeftClear(ghostCurX, ghostCurY, lastX, lastY)) {
 		distance[1] = distanceToPacman(ghostCurX - 1, ghostCurY, changeX, changeY);
+		noDirectionClear--;
 	}
 	if (isDirectionDownClear(ghostCurX, ghostCurY, lastX, lastY)) {
 		distance[2] = distanceToPacman(ghostCurX, ghostCurY + 1, changeX, changeY);
+		noDirectionClear--;
 	}
 	if (isDirectionRightClear(ghostCurX, ghostCurY, lastX, lastY)) {
 		distance[3] = distanceToPacman(ghostCurX + 1, ghostCurY, changeX, changeY);
+		noDirectionClear--;
+	}
+	if (noDirectionClear == 0) {
+		cantMove = true;
 	}
 
 }
@@ -515,21 +614,28 @@ int isGhostEatenByPacman() {
 	return index;
 }
 
+bool isCornerAvailable(int x, int y) {
+	return false;
+}
+
 void sendGhostToCorner(int ghostNumber) {
+
+	int curHeightOfGrid = heightGrid - wallsIncl;
+	int curWidthOfGrid = widthGrid - wallsIncl;
 	switch (ghostNumber)
 	{
 	case 0:
 		//check for corner clearity
-		moveGhostTo(1, widthGrid - 2, 0, blinkyNumber, redColor);
+		moveGhostTo(1, curWidthOfGrid - 1, 0, blinkyNumber, redColor);
 		break;
 	case 1:
-		moveGhostTo(2, 1, 1, pinkyNumber, pinkColor);
+		moveGhostTo(1, 1, 1, pinkyNumber, pinkColor);
 		break;
 	case 2:
-		moveGhostTo(heightGrid - 2, widthGrid - 2, 2, inkyNumber, blueColor);
+		moveGhostTo(curHeightOfGrid - 1, curWidthOfGrid - 1, 2, inkyNumber, blueColor);
 		break;
 	case 3:
-		moveGhostTo(heightGrid - 2, 1, 3, clydeNumber, greenColor);
+		moveGhostTo(curHeightOfGrid-1 ,1, 3, clydeNumber, greenColor);
 		break;
 	}
 }
@@ -541,8 +647,9 @@ void randomGhostMoves(int ghostCurX, int ghostCurY, int lastX, int lastY, int gh
 		return;
 	}
 	int randomWay;
+	int attempts = 0;
 	bool isValid = false;
-	while (!isValid) {
+	while (!isValid && attempts < 4) {
 		randomWay = rand() % 4;
 		switch (randomWay) {
 		case 0:
@@ -566,6 +673,7 @@ void randomGhostMoves(int ghostCurX, int ghostCurY, int lastX, int lastY, int gh
 			moveGhostTo(ghostCurX, ghostCurY, ghostNumber, ghostSymbol, color);
 			break;
 		}
+		attempts++;
 	}
 }
 
@@ -754,30 +862,37 @@ void activateGhosts() {
 	isGoingLeft = false;
 }
 
-void runGameLoop() {
+void callChaseMode() {
+	activateGhosts();
+	handlePacmanMovement();
+	displayPlayerScore();
+}
 
+void callFrightenedMode() {
+	frightenedModeGhosts();
+	handlePacmanMovement();
+	displayPlayerScore();
+}
+void endFrightenedMode() {
+	isFrightenedMode = false;
+	isChaseMode = true;
+	frightenedModeCount = 0;
+}
+
+void runGameLoop() {
 	while (!isGameOver()) {
 		if (isChaseMode) {
-			activateGhosts();
-			handlePacmanMovement();
-			displayPlayerScore();
+			callChaseMode();
 			Sleep(125);
 		}
 		if (isFrightenedMode) {
-			frightenedModeGhosts();
-			handlePacmanMovement();
-			displayPlayerScore();
+			callFrightenedMode();
 			Sleep(125);
 			frightenedModeCount++;
-			if (frightenedModeCount == 30) {
-				isFrightenedMode = false;
-				isChaseMode = true;
-				frightenedModeCount = 0;
-				continue;
+			if (frightenedModeCount == 20) {
+				endFrightenedMode();
 			}
 		}
-
-
 	}
 	Sleep(600);
 	showGameOverScreen();
