@@ -143,24 +143,63 @@ void prepareConsoleForGame() {
 	clearConsole();
 }
 
+
+bool isNumber(char* str) {
+	while (*str) {
+		if ((*str) < '0' || (*str) > '9') {
+			return false;
+		}
+		str++;
+	}
+	return true;
+}
+int toInt(char* str) {
+	int number = 0;
+	while (*str) {
+		number = number * 10 + (*str - '0');
+		str++;
+	}
+	return number;
+}
+
 void initializeGridDimensions() {
-	std::cout << "Grid dimensions must be positive integers over 10 under 50(incl.)\nwith difference betwen the parameters less than 10 " << std::endl << std::endl;
-	std::cout << "Enter grid width: ";
-	std::cin >> widthGrid;
-	std::cout << "Enter grid height: ";
-	std::cin >> heightGrid;
+	const int ARRAY_SIZE = 100;
+	char number1[ARRAY_SIZE], number2[ARRAY_SIZE];
 
-	int diff = std::abs(widthGrid - heightGrid);
-	if (widthGrid < 10 || heightGrid < 10 || widthGrid > 50 || heightGrid > 50 || diff > 10) {
-		std::cerr << "Error: Grid dimensions must be positive integers over 10 under 50(incl.)\nwith difference betwen the parameters less than 10 " << std::endl;
-		std::exit(1);
+	while (true) {
+		std::cout << "Input number for the field of the game" << std::endl;
+		std::cout << "Enter grid width: ";
+		std::cin.getline(number1, ARRAY_SIZE);
+
+		std::cout << "Enter grid height: ";
+		std::cin.getline(number2, ARRAY_SIZE);
+
+		clearConsole();
+		if (!isNumber(number1) || !isNumber(number2)) {
+			std::cerr << "ERROR: Incorrect input, please enter numbers." << std::endl << std::endl;
+			continue;
+		}
+
+		widthGrid = toInt(number1);
+		heightGrid = toInt(number2);
+
+		int diff = std::abs(widthGrid - heightGrid);
+		if (widthGrid < 10 || heightGrid < 10 || widthGrid > 50 || heightGrid > 50) {
+			std::cerr << "ERROR: Grid dimensions must be positive integers over 10 and under 50 (inclusive) " << std::endl << std::endl;
+			continue;
+		}
+		if (diff >= 10) {
+			std::cerr << "(height - width) should not be more than 9." << std::endl;
+			continue;
+		}
+
+		if (widthGrid <= 49 || heightGrid <= 49) {
+			widthGrid += wallsIncl;
+			heightGrid += wallsIncl;
+		}
+
+		break;
 	}
-
-	if (widthGrid < 49 || heightGrid < 49) {
-		widthGrid += wallsIncl;
-		heightGrid += wallsIncl;
-	}
-
 	prepareConsoleForGame();
 }
 
@@ -186,16 +225,40 @@ void updateScore(int points) {
 	displayPlayerScore();
 }
 
-void showGameOverScreen() {
+bool isPlayerCollectedAllFood() {
+	return (collectedAmountOfFood == 4);
+}
+
+void showLoseScreen() {
+	centerConsole();
+	resizeConsole(25, 15);
 	clearConsole();
 	std::cout << R"(
-  #####     #    #     # ######      ######  #          # ###### ######      #
- #     #   # #   ##   ## #          #      #  #        #  #      #     #     # 
- #        #   #  # # # # #          #      #   #      #   #      #     #     #
- #  #### #     # #  #  # ######     #      #    #    #    ###### #    #      #
- #     # ####### #     # #          #      #     #  #     #      ####        #
- #     # #     # #     # #          #      #     #  #     #      #   #        
-  #####  #     # #     # ######      ######       ##      ###### #     #     #
+ #     #  #####  #     #     #        ######    #######  #######    #
+  #   #  #     # #     #     #       #      #   #        #          #
+   # #   #     # #     #     #       #      #   ###      #          #
+    #    #     # #     #     #       #      #      ####  #######    #
+    #    #     # #     #     #       #      #         #  #     
+    #     #####   #####      #######  ######    #######  #######    # 
+    )" << std::endl;
+
+	std::cout << "\n\n          Your Final Score: " << playerScore << "\n\n";
+
+	std::cout << "   Press any key to exit the game...";
+	waitForGameExit();
+}
+
+void showWinScreen() {
+	centerConsole();
+	resizeConsole(25, 15);
+	clearConsole();
+	std::cout << R"(
+ #     #  #####  #     #     #      #  #######  ##    #    #
+  #   #  #     # #     #     #      #     #     # #   #    #
+   # #   #     # #     #     #  ##  #     #     #  #  #    # 
+    #    #     # #     #     # #  # #     #     #   # #    #
+    #    #     # #     #     ##    ##     #     #    ## 
+    #     #####   #####      #      #  #######  #     #    #
     )" << std::endl;
 
 	std::cout << "\n\n          Your Final Score: " << playerScore << "\n\n";
@@ -213,9 +276,6 @@ bool isAllFoodCollected() {
 	return true;
 }
 
-bool isPlayerCollectedAllFood() {
-	return (collectedAmountOfFood == 4);
-}
 
 bool isPacmanCaughtByGhost() {
 	if (isChaseMode) {
@@ -233,6 +293,27 @@ bool isPacmanCaughtByGhost() {
 
 bool isGameOver() {
 	return isPacmanCaughtByGhost() || (isAllFoodCollected() && isPlayerCollectedAllFood());
+}
+
+void showGameOverScreen() {
+	resizeConsole(widthGrid + 20, heightGrid);
+	clearConsole();
+	std::cout << R"(
+  ####       #      #      # #######      #####  #         # ####### #####    #
+ #    #     # #     ##    ## #           #     #  #       #  #       #    #   #
+ #         #   #    # #  # # #           #     #   #     #   #       #####    #
+ #  ###   #######   #  ##  # #######     #     #    #   #    ####### #   #    #
+ #    #  #       #  #      # #           #     #     # #     #       #    #   
+  ####  #         # #      # #######      #####       #      ####### #    #   #
+    )" << std::endl;
+
+	Sleep(1500);
+	if ((isAllFoodCollected() && isPlayerCollectedAllFood())) {
+		showWinScreen();
+	}
+	else if (isPacmanCaughtByGhost) {
+		showLoseScreen();
+	}
 }
 
 void spawnFood() {
@@ -520,16 +601,16 @@ void sendGhostToCorner(int ghostNumber) {
 	{
 	case 0:
 		//check for corner clearity
-		moveGhostTo(1, widthGrid - 2, 0, blinkyNumber, redColor);
+		moveGhostTo(1, widthGrid - 1, 0, blinkyNumber, redColor);
 		break;
 	case 1:
 		moveGhostTo(2, 1, 1, pinkyNumber, pinkColor);
 		break;
 	case 2:
-		moveGhostTo(heightGrid - 2, widthGrid - 2, 2, inkyNumber, blueColor);
+		moveGhostTo(heightGrid - 1, widthGrid - 1, 2, inkyNumber, blueColor);
 		break;
 	case 3:
-		moveGhostTo(heightGrid - 2, 1, 3, clydeNumber, greenColor);
+		moveGhostTo(heightGrid - 1, 1, 3, clydeNumber, greenColor);
 		break;
 	}
 }
@@ -541,8 +622,9 @@ void randomGhostMoves(int ghostCurX, int ghostCurY, int lastX, int lastY, int gh
 		return;
 	}
 	int randomWay;
+	int attempts = 0;
 	bool isValid = false;
-	while (!isValid) {
+	while (!isValid && attempts < 4) {
 		randomWay = rand() % 4;
 		switch (randomWay) {
 		case 0:
@@ -566,6 +648,7 @@ void randomGhostMoves(int ghostCurX, int ghostCurY, int lastX, int lastY, int gh
 			moveGhostTo(ghostCurX, ghostCurY, ghostNumber, ghostSymbol, color);
 			break;
 		}
+		attempts++;
 	}
 }
 
