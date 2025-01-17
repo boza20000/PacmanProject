@@ -839,7 +839,13 @@ void activateBlueGhost() {
 void activateGreenGhost() {
 	shortestPathAlgorithmGreen();
 }
-
+void pacmanMovmentDirectionReset()
+{
+	isGoingDown = false;
+	isGoingUp = false;
+	isGoingRight = false;
+	isGoingLeft = false;
+}
 void activateGhosts() {
 	if (playerScore >= scoreToActivtRed) {
 		activateRedGhost();
@@ -854,12 +860,7 @@ void activateGhosts() {
 	if (playerScore >= scoreToActivtGreen) {
 		activateGreenGhost();
 	}
-
-	//pacman movment direction reset
-	isGoingDown = false;
-	isGoingUp = false;
-	isGoingRight = false;
-	isGoingLeft = false;
+	pacmanMovmentDirectionReset();
 }
 
 void callChaseMode() {
@@ -898,11 +899,6 @@ void runGameLoop() {
 	showGameOverScreen();
 }
 
-void waitForGameStart() {
-	Sleep(3000);
-	runGameLoop();
-}
-
 void InitializeGame() {
 	hideConsoleCursor();
 	srand((unsigned int)time(0));
@@ -912,12 +908,13 @@ void InitializeGame() {
 	spawnGhost();
 	spawnPacman();
 	spawnFood();
-	waitForGameStart();
 }
 
 //the function calls the game
 void startPacmanGame() {
 	InitializeGame();
+	Sleep(3000);
+	runGameLoop();
 }
 
 int main() {
