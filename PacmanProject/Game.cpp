@@ -228,15 +228,20 @@ void initializeGridDimensions() {
 
 // Function to wait for any key press to exit the game
 void waitForGameExit() {
+	// Infinite loop to check for key press
 	while (true) {
-		// Iterate through key codes to check if any key is pressed
-		for (int key = 0x08; key <= 0xFE; ++key) {
-			if (GetAsyncKeyState(key) & 0x8000) {  // Check if the key is pressed or waits 10sec
+		// Check standard ASCII range and function keys
+		for (int key = 0x20; key <= 0x7E; ++key) {  // Printable ASCII characters
+			if (GetAsyncKeyState(key) & 0x8000) {  // If key is pressed
 				clearConsole();  // Clear the console
-				exit(0);  // Exit the game if a key is pressed
+				std::cout << "Exiting game..." << std::endl;  // Provide feedback
+				Sleep(1500);
+				exit(0);
+				return;  // Exit function safely
 			}
 		}
-		Sleep(50);  // Sleep for a short time to prevent excessive CPU usage
+		// Sleep for 50ms to reduce CPU usage
+		Sleep(50);
 	}
 }
 
