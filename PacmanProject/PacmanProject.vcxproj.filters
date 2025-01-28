@@ -46,5 +46,8 @@
     <ClInclude Include="RedGhost.h">
       <Filter>Header Files\GhostsHeaders</Filter>
     </ClInclude>
+    <ClInclude Include="Game.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -134,6 +134,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BlueGhost.h" />
+    <ClInclude Include="Game.h" />
     <ClInclude Include="GreenGhost.h" />
     <ClInclude Include="map.h" />
     <ClInclude Include="Pacman.h" />

@@ -1,3 +1,13 @@
+//Solution to course project # <5>
+//Introduction to programming course
+//Faculty of Mathematics and Informatics od Sofia University
+//Winter semester 2024/2025
+//
+//@author <Boris Dimitrov Tsvetkov>
+//idNumber <6MI0600504
+//@compiler Microsoft Visual Studio compiler
+//file with the main game and helper functions
+
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
@@ -9,22 +19,8 @@
 #include "BlueGhost.h"
 #include "GreenGhost.h"
 #include "PinkGhost.h"
+#include "Game.h"
 
-const size_t amountOfGhosts = 4;
-const size_t foodAmount = 4;
-const size_t prizeOfFood = 20;
-const size_t prizeOfPoint = 1;
-int ghostX[amountOfGhosts], ghostY[amountOfGhosts];
-int foodX[foodAmount], foodY[foodAmount];
-char lastSymbol[amountOfGhosts] = { ' ',' ',' ',' ' };
-const size_t wallsIncl = 2;
-const char* blueColor = "\033[34m";
-const char* endColor = "\033[0m";
-size_t collectedAmountOfFood = 0;
-size_t frightenedModeCount = 0;
-bool isChaseMode = true;
-bool isFrightenedMode = false;
-bool cantMove = false;
 std::ifstream file("map.txt");
 
 // Function to set the cursor position at a specific (x, y) coordinate in the console window
@@ -835,34 +831,34 @@ void sendGhostToCorner(int ghostNumber) {
 	switch (ghostNumber) {
 	case 0:
 		if (isCornerClear(1, curWidthOfGrid - 1)) {
-			moveGhostTo(1, curWidthOfGrid - 1, 0, blinkyNumber, redColor);  // Move Blinky to corner
+			moveGhostTo(1, curWidthOfGrid - 1, blinkyNumber, blinkySymbol, redColor);  // Move Blinky to corner
 		}
 		else if (isCornerClear(2, curWidthOfGrid - 1)) {
-			moveGhostTo(2, curWidthOfGrid - 1, 0, blinkyNumber, redColor);  // Move Blinky to adjacent position
+			moveGhostTo(2, curWidthOfGrid - 1, blinkyNumber, blinkySymbol, redColor);  // Move Blinky to adjacent position
 		}
 		break;
 	case 1:
 		if (isCornerClear(1, 1)) {
-			moveGhostTo(1, 1, 1, pinkyNumber, pinkColor);  // Move Pinky to corner
+			moveGhostTo(1, 1, pinkyNumber, pinkySymbol, pinkColor);  // Move Pinky to corner
 		}
 		else if (isCornerClear(1, 2)) {
-			moveGhostTo(1, 2, 1, pinkyNumber, pinkColor);  // Move Pinky to adjacent position
+			moveGhostTo(1, 2, pinkyNumber, pinkySymbol, pinkColor);  // Move Pinky to adjacent position
 		}
 		break;
 	case 2:
 		if (isCornerClear(curHeightOfGrid - 1, curWidthOfGrid - 1)) {
-			moveGhostTo(curHeightOfGrid - 1, curWidthOfGrid - 1, 2, inkyNumber, blueColor);  // Move Inky to corner
+			moveGhostTo(curHeightOfGrid - 1, curWidthOfGrid - 1, inkyNumber, inkySymbol, blueColor);  // Move Inky to corner
 		}
 		else if (isCornerClear(curHeightOfGrid - 2, curWidthOfGrid - 1)) {
-			moveGhostTo(curHeightOfGrid - 2, curWidthOfGrid - 1, 2, inkyNumber, blueColor);  // Move Inky to adjacent position
+			moveGhostTo(curHeightOfGrid - 2, curWidthOfGrid - 1, inkyNumber, inkySymbol, blueColor);  // Move Inky to adjacent position
 		}
 		break;
 	case 3:
 		if (isCornerClear(curHeightOfGrid - 1, 1)) {
-			moveGhostTo(curHeightOfGrid - 1, 1, 3, clydeNumber, greenColor);  // Move Clyde to corner
+			moveGhostTo(curHeightOfGrid - 1, 1, clydeNumber, clydeSymbol, greenColor);  // Move Clyde to corner
 		}
 		else if (isCornerClear(curHeightOfGrid - 2, 1)) {
-			moveGhostTo(curHeightOfGrid - 2, 1, 3, clydeNumber, greenColor);  // Move Clyde to adjacent position
+			moveGhostTo(curHeightOfGrid - 2, 1, clydeNumber, clydeSymbol, greenColor);  // Move Clyde to adjacent position
 		}
 		break;
 	}
@@ -1173,20 +1169,20 @@ void activateGhosts() {
 
 // Call chase mode, activating the ghosts and handling Pacman's movement
 void callChaseMode() {
-	activateGhosts();  // Activate ghosts based on the current score
 	handlePacmanMovement();  // Handle Pacman's movement
+	activateGhosts();  // Activate ghosts based on the current score
 	displayPlayerScore();  // Display the current player score
 }
 
 // Call frightened mode, which either makes ghosts move backward or perform normal frightened behavior
 void callFrightenedMode() {
+	handlePacmanMovement();  // Handle Pacman's movement during frightened mode
 	if (frightenedModeCount == 0) {
 		makeAllBackwardsMove();  // Make ghosts move backward if the frightened mode count is 0
 	}
 	else {
 		frightenedModeGhosts();  // Otherwise, apply frightened mode behavior for ghosts
 	}
-	handlePacmanMovement();  // Handle Pacman's movement during frightened mode
 	displayPlayerScore();  // Display the current player score
 }
 

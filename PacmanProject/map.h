@@ -1,3 +1,14 @@
+#pragma once
+//Solution to course project # <5>
+//Introduction to programming course
+//Faculty of Mathematics and Informatics od Sofia University
+//Winter semester 2024/2025
+//
+//@author <Boris Dimitrov Tsvetkov>
+//idNumber <6MI0600504
+//@compiler Microsoft Visual Studio compiler
+//header file with helper variables
+
 const char wallSymbol = '#';
 const char foodSymbol = '@';
 const char pointSymbol = '.';
