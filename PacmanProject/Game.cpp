@@ -209,13 +209,19 @@ void initializeGridDimensions() {
 		}
 
 		// Include walls in the grid if dimensions are valid
-		if (widthGrid <= 49) {
+		if (widthGrid < 49) {
 			widthGrid += wallsIncl;
 		}
-
-		if (heightGrid <= 49) {
+		if (heightGrid < 49) {
 			heightGrid += wallsIncl;
 		}
+		if (widthGrid == 49) {
+			widthGrid += wallsIncl - 1;
+		}
+		if (heightGrid == 49) {
+			heightGrid += wallsIncl - 1;
+		}
+
 
 		break;  // Exit the loop if valid dimensions are entered
 	}
@@ -311,29 +317,34 @@ bool isPlayerCollectedAllFood() {
 bool isPacmanCaughtByGhost() {
 	if (isChaseMode) {
 		for (size_t i = 0; i < amountOfGhosts; i++) {
-			// Check if Pacman's current position matches a ghost's current position
+			// Check if Pacman and ghost occupy the same position
 			if (ghostX[i] == pacmanX && ghostY[i] == pacmanY) {
 				return true;
 			}
 
-			// Variables to track the last position of each ghost
+			// Get the last position of the ghost
 			int lastX, lastY;
 			switch (i) {
-			case 0: lastX = redLastX; lastY = redLastY; break;  // Red ghost (Blinky)
-			case 1: lastX = pinkLastX; lastY = pinkLastY; break;  // Pink ghost (Pinky)
-			case 2: lastX = blueLastX; lastY = blueLastY; break;  // Blue ghost (Inky)
-			case 3: lastX = greenLastX; lastY = greenLastY; break;  // Green ghost (Clyde)
+			case 0: lastX = redLastX; lastY = redLastY; break;
+			case 1: lastX = pinkLastX; lastY = pinkLastY; break;
+			case 2: lastX = blueLastX; lastY = blueLastY; break;
+			case 3: lastX = greenLastX; lastY = greenLastY; break;
 			}
 
-			// Check if Pacman and the ghost swapped positions
-			if (ghostX[i] == pacmanX - isGoingRight + isGoingLeft && ghostY[i] == pacmanY - isGoingDown + isGoingUp &&
-				pacmanX == ghostX[i] - (ghostX[i] - lastX) && pacmanY == ghostY[i] - (ghostY[i] - lastY)) {
+			// Convert movement direction booleans into integer values
+			int moveX = (isGoingRight ? 1 : 0) - (isGoingLeft ? 1 : 0);
+			int moveY = (isGoingDown ? 1 : 0) - (isGoingUp ? 1 : 0);
+
+			// Check if Pacman and ghost swapped positions
+			if (ghostX[i] == pacmanX - moveX && ghostY[i] == pacmanY - moveY &&
+				pacmanX == lastX && pacmanY == lastY) {
 				return true;
 			}
 		}
 	}
 	return false;
 }
+
 // Function to check if the game is over
 bool isGameOver() {
 	return isPacmanCaughtByGhost() || (isAllFoodCollected() && isPlayerCollectedAllFood());
@@ -541,6 +552,12 @@ void spawnGhost() {
 	setGhostPosition(1, 1, pinkyNumber);  // Pinky
 	setGhostPosition(2, 1, inkyNumber);   // Inky
 	setGhostPosition(3, 1, clydeNumber);  // Clyde
+
+	// Save the symbols where the ghosts initially spawn
+	lastSymbol[blinkyNumber] = grid[2][1];
+	lastSymbol[pinkyNumber] = grid[1][1];
+	lastSymbol[inkyNumber] = grid[1][2];
+	lastSymbol[clydeNumber] = grid[1][3];
 
 	// Place ghosts on the grid
 	grid[ghostY[0]][ghostX[0]] = blinkySymbol;
@@ -803,14 +820,25 @@ void checkDirectionsAvailability(int ghostCurX, int ghostCurY, int distance[], i
 
 // Function to check if a ghost has been eaten by Pac-Man by checking their positions
 int isGhostEatenByPacman() {
-	int index = -1;
-	for (int i = 0; i < amountOfGhosts; i++) {
-		if (getGhostXPosition(i) == pacmanX && getGhostYPosition(i) == pacmanY) {
-			return i;  // Return the index of the ghost that was eaten
-		}
-	}
-	return index;  // Return -1 if no ghost is eaten
+    // Pacman must be in frightened mode to eat a ghost
+    if (!isFrightenedMode) {
+        return -1;
+    }
+
+    // Check if Pacman is stationary (not moving)
+    if (!isGoingUp && !isGoingDown && !isGoingLeft && !isGoingRight) {
+        return -1;  // Pacman cannot eat a ghost while standing still
+    }
+
+    for (int i = 0; i < amountOfGhosts; i++) {
+        // Check if Pacman's position matches a ghost's position
+        if (getGhostXPosition(i) == pacmanX && getGhostYPosition(i) == pacmanY) {
+            return i;  // Return the index of the eaten ghost
+        }
+    }
+    return -1;  // No ghost was eaten
 }
+
 
 // Function to check if a corner is available for a ghost to move into
 bool isCornerAvailable(int x, int y) {
@@ -885,30 +913,7 @@ int activateReadyGhosts() {
 	return curAmountOfGhosts;  // Return the total number of active ghosts
 }
 
-// Function to move ghosts randomly within the grid based on available directions
-void randomGhostMoves(int ghostCurX, int ghostCurY, int lastX, int lastY, int ghostNumber, char ghostSymbol, const char* color) {
-	int eatenGhost = isGhostEatenByPacman();  // Check if any ghost has been eaten by Pacman
-	if (eatenGhost != -1) {
-		sendGhostToCorner(eatenGhost);  // If a ghost was eaten, send it to its starting corner
-		return;  // Exit the function after a ghost is eaten to prevent further movement
-	}
-	// Check the availability of directions
-	bool directionValid[4] = {
-		isDirectionUpClear(ghostCurX, ghostCurY, lastX, lastY),
-		isDirectionDownClear(ghostCurX, ghostCurY, lastX, lastY),
-		isDirectionLeftClear(ghostCurX, ghostCurY, lastX, lastY),
-		isDirectionRightClear(ghostCurX, ghostCurY, lastX, lastY)
-	};
-
-	// Count valid directions
-	int validDirectionsCount = 0;
-	for (int i = 0; i < 4; i++) {
-		if (directionValid[i]) {
-			validDirectionsCount++;
-		}
-	}
-
-	// If no valid direction is available, move backwards
+bool tryBackwardsMovement(int validDirectionsCount, int lastX, int lastY, int ghostNumber, char ghostSymbol, const char* color) {
 	if (validDirectionsCount == 0) {
 		if (isBackwardsPossible(lastX, lastY)) {
 			// Implement the backwards movement logic
@@ -925,10 +930,12 @@ void randomGhostMoves(int ghostCurX, int ghostCurY, int lastX, int lastY, int gh
 				moveGhostTo(lastX, lastY, ghostNumber, ghostSymbol, color); // Move Clyde back
 			}
 		}
-		return; // Return to prevent random movement if no directions are valid
+		return false; // Return to prevent random movement if no directions are valid
 	}
+	return true;
+}
 
-	// Otherwise, move in a random valid direction
+void tryRandomValidDirect(bool directionValid[], int ghostCurX, int ghostCurY, int ghostNumber, char ghostSymbol, const char* color) {
 	int randomWay = -1;
 	bool isValid = false;
 	int attempts = 0;
@@ -961,14 +968,46 @@ void randomGhostMoves(int ghostCurX, int ghostCurY, int lastX, int lastY, int gh
 			break;
 		}
 	}
+}
+
+// Function to move ghosts randomly within the grid based on available directions
+void randomGhostMoves(int ghostCurX, int ghostCurY, int &lastX, int &lastY, int ghostNumber, char ghostSymbol, const char* color) {
+	int eatenGhost = isGhostEatenByPacman();  // Check if any ghost has been eaten by Pacman
+	if (eatenGhost != -1) {
+		sendGhostToCorner(eatenGhost);  // If a ghost was eaten, send it to its starting corner
+		return;  // Exit the function after a ghost is eaten to prevent further movement
+	}
+	// Check the availability of directions
+	bool directionValid[4] = {
+			isDirectionUpClear(ghostCurX, ghostCurY, lastX, lastY),
+			isDirectionDownClear(ghostCurX, ghostCurY, lastX, lastY),
+			isDirectionLeftClear(ghostCurX, ghostCurY, lastX, lastY),
+			isDirectionRightClear(ghostCurX, ghostCurY, lastX, lastY)
+	};
+
+	// Count valid directions
+	int validDirectionsCount = 0;
+	for (int i = 0; i < 4; i++) {
+		if (directionValid[i]) {
+			validDirectionsCount++;
+		}
+	}
+
+	// If no valid direction is available, move backwards
+	if (!tryBackwardsMovement(validDirectionsCount, lastX, lastY, ghostNumber, ghostSymbol, color)) {
+		return;
+	}
+
+	// Otherwise, move in a random valid direction
+	tryRandomValidDirect(directionValid, ghostCurX, ghostCurY, ghostNumber, ghostSymbol, color);
 
 	// Update the last position of the ghost after moving
 	lastX = ghostCurX;
 	lastY = ghostCurY;
 }
-
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //function that activates the frigthened mode
-void frightenedModeActivated(int ghostCurX, int ghostCurY, int lastX, int lastY, int ghostNumber, char ghostSymbol, const char* color) {
+void frightenedModeActivated(int ghostCurX, int ghostCurY, int &lastX, int &lastY, int ghostNumber, char ghostSymbol, const char* color) {
 	randomGhostMoves(ghostCurX, ghostCurY, lastX, lastY, ghostNumber, ghostSymbol, color);
 	repaintGhost(ghostNumber, blueColor);
 }
@@ -1069,7 +1108,7 @@ void shortestPathAlgorithmBlue() {
 		changeOfPacmanX += 2;  // Move Inky to the right relative to Pacman
 	}
 
-	// Calculate the direction vector between Red ghost and Pacman’s target position
+	// Calculate the direction vector between Red ghost and Pacman's target position
 	int vectorX = changeOfPacmanX - redCurX;
 	int vectorY = changeOfPacmanY - redCurY;
 
@@ -1208,7 +1247,7 @@ void runGameLoop() {
 			Sleep(125);  // Pause for a short period to control the game speed
 			frightenedModeCount++;  // Increment the frightened mode count
 			// End the frightened mode after 20 cycles (adjust this number to your game rules)
-			if (frightenedModeCount == 20) {
+			if (frightenedModeCount == 30) {
 				endFrightenedMode();
 			}
 		}
