@@ -1,16 +1,23 @@
+
 #pragma once
-//Solution to course project # <5>
-//Introduction to programming course
-//Faculty of Mathematics and Informatics od Sofia University
-//Winter semester 2024/2025
-//
-//@author <Boris Dimitrov Tsvetkov>
-//idNumber <6MI0600504
-//@compiler Microsoft Visual Studio compiler
-//header file with helper variables for the ghosts
-const char pinkySymbol = 'Y';
-const size_t pinkyNumber = 1;
-const char* pinkColor = "\033[35m";
-const size_t scoreToActivtPink = 20;
-int pinkLastX = -1;
-int pinkLastY = -1;
+#include "Ghost.h"
+#include "Settings.h"
+#include <climits>
+#include <iostream>
+
+class PinkGhost : public Ghost
+{
+public:
+
+	PinkGhost(const char* color, Position position, char symbol, size_t scoreToActivate, size_t ghostNumber) :
+		Ghost(color, position, symbol, scoreToActivate, ghostNumber) {
+	}
+	// Moves the Pink Ghost (Pinky) backwards to its previous position if the move is possible
+	void moveBackwards(const char* color)const override;
+	// Activate the Pink Ghost (Pinky)
+	 void activateGhost()const override;
+	/// Pink Ghost algorithm
+	 void shortestPathAlgorithm() const override;
+
+
+};

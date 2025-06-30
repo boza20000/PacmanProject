@@ -1,2 +1,62 @@
-﻿  Game.cpp
+﻿  BlueGhost.cpp
+C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\BlueGhost.cpp(6,31): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\BlueGhost.cpp(7,31): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\BlueGhost.cpp(9,37): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\BlueGhost.cpp(25,36): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\BlueGhost.cpp(26,36): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\BlueGhost.cpp(27,34): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\BlueGhost.cpp(28,34): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\BlueGhost.cpp(63,54): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+  Console.cpp
+C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\Console.cpp(195,17): warning C4267: '+=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\Console.cpp(198,18): warning C4267: '+=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\Console.cpp(201,27): warning C4267: '+=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\Console.cpp(204,28): warning C4267: '+=': conversion from 'size_t' to 'int', possible loss of data
+  Game.cpp
+  Ghost.cpp
+C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\Ghost.cpp(43,25): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\Ghost.cpp(44,25): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\Ghost.cpp(45,25): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\Ghost.cpp(46,25): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\Ghost.cpp(61,15): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\Ghost.cpp(62,15): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\Ghost.cpp(63,15): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\Ghost.cpp(64,15): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\Ghost.cpp(296,22): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\Ghost.cpp(297,21): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\Ghost.cpp(302,39): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\Ghost.cpp(305,39): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\Ghost.cpp(310,22): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\Ghost.cpp(313,22): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\Ghost.cpp(318,57): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\Ghost.cpp(321,57): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\Ghost.cpp(326,40): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\Ghost.cpp(329,40): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+  GreenGhost.cpp
+C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\GreenGhost.cpp(8,31): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\GreenGhost.cpp(9,31): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\GreenGhost.cpp(11,39): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\GreenGhost.cpp(27,36): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\GreenGhost.cpp(28,36): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\GreenGhost.cpp(39,55): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\GreenGhost.cpp(53,55): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+  Pacman.cpp
+C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\Pacman.cpp(77,24): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\Pacman.cpp(84,24): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+  PinkGhost.cpp
+C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\PinkGhost.cpp(6,31): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\PinkGhost.cpp(7,31): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\PinkGhost.cpp(9,37): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\PinkGhost.cpp(24,36): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\PinkGhost.cpp(25,36): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\PinkGhost.cpp(54,54): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+  RedGhost.cpp
+C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\RedGhost.cpp(12,31): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\RedGhost.cpp(13,31): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\RedGhost.cpp(15,35): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\RedGhost.cpp(23,36): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\RedGhost.cpp(24,36): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\bobi_\source\repos\PacmanProject\PacmanProject\RedGhost.cpp(28,54): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+  Settings.cpp
+  Generating Code...
   PacmanProject.vcxproj -> C:\Users\bobi_\source\repos\PacmanProject\x64\Debug\PacmanProject.exe

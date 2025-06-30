@@ -1,27 +1,51 @@
 #pragma once
-//Solution to course project # <5>
-//Introduction to programming course
-//Faculty of Mathematics and Informatics od Sofia University
-//Winter semester 2024/2025
-//
-//@author <Boris Dimitrov Tsvetkov>
-//idNumber <6MI0600504
-//@compiler Microsoft Visual Studio compiler
-//header file with helper variables
 
-const size_t amountOfGhosts = 4;
-const size_t foodAmount = 4;
-const size_t prizeOfFood = 20;
-const size_t prizeOfPoint = 1;
-int ghostX[amountOfGhosts], ghostY[amountOfGhosts];
-int foodX[foodAmount], foodY[foodAmount];
-char lastSymbol[amountOfGhosts] = { ' ',' ',' ',' ' };
-const size_t wallsIncl = 2;
-const char* blueColor = "\033[34m";
-const char* endColor = "\033[0m";
-size_t collectedAmountOfFood = 0;
-size_t frightenedModeCount = 0;
-bool isChaseMode = true;
-bool isFrightenedMode = false;
-bool cantMove = false;
+class Game {
+	Game(){}
+public:
+	Game(const Game&) = delete;
+	Game& operator=(const Game&) = delete;
+	static Game& game() {
+		static Game instance;
+		return instance;
+	}
 
+	static bool isAllFoodCollected();
+	// Function to check if the player has collected all the food (4 pieces)
+	static bool isPlayerCollectedAllFood();
+
+	// Function to check if the game is over
+	static bool isGameOver();
+	// Function to show the game over screen with a message and decide win or loss
+	static void showGameOverScreen();
+
+	// Function to spawn food on the grid in random empty positions
+	static void spawnFood();
+
+	// Function to check if the given symbol represents food
+	static bool isFoodEaten(char ch);
+
+	// Function to check if the given symbol represents a point
+	static bool isPointEaten(char ch);
+
+	// Function to update a specific grid cell with a new symbol
+	static void updateGridCell(int x, int y, char symbol);
+
+	// Call chase mode, activating the ghosts and handling Pacman's movement
+	void callChaseMode();
+
+	// Call frightened mode, which either makes ghosts move backward or perform normal frightened behavior
+	void callFrightenedMode();
+
+	// End the frightened mode, resetting the state to chase mode
+	void endFrightenedMode();
+
+	// Main game loop that keeps running until the game is over
+	void runGameLoop();
+
+	// Initialize the game environment (grid, map, ghosts, etc.)
+	void InitializeGame();
+
+	// Start the Pacman game, initializing it and then running the game loop
+	void startPacmanGame();
+};

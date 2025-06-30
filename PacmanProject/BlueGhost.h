@@ -1,18 +1,21 @@
 #pragma once
-//Solution to course project # <5>
-//Introduction to programming course
-//Faculty of Mathematics and Informatics od Sofia University
-//Winter semester 2024/2025
-//
-//@author <Boris Dimitrov Tsvetkov>
-//idNumber <6MI0600504
-//@compiler Microsoft Visual Studio compiler
-//header file with helper variables for the ghosts
+#include "Ghost.h"
+#include "Settings.h"
+#include <iostream>
+#include <climits>
+class BlueGhost : public Ghost
+{
+public:
+	BlueGhost(const char * color, Position position, char symbol, size_t scoreToActivate, size_t ghostNumber) :
+		Ghost(color, position, symbol, scoreToActivate, ghostNumber) {
+	}
 
-const char inkySymbol = 'I';
-const size_t inkyNumber = 2;
+	// Moves the Blue Ghost (Inky) backwards to its previous position if the move is possible
+	void moveBackwards(const char* color)const override;
 
-const char* cyanColor = "\033[36m";
-const size_t scoreToActivtBlue = 40;
-int blueLastX = -1;
-int blueLastY = -1;
+	// Activate the Blue Ghost (Inky)
+	void activateGhost() const override;
+
+	// Blue Ghost algorithm
+	void shortestPathAlgorithm() const override;
+};

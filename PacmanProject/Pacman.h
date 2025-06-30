@@ -1,33 +1,57 @@
 #pragma once
-//Solution to course project # <5>
-//Introduction to programming course
-//Faculty of Mathematics and Informatics od Sofia University
-//Winter semester 2024/2025
-//
-//@author <Boris Dimitrov Tsvetkov>
-//idNumber <6MI0600504
-//@compiler Microsoft Visual Studio compiler
-//header file with helper variables
 
+class Pacman {
 
-const char pacmanSymbol = 'P';
-const char* yellowColor = "\033[33m";
-int pacmanX, pacmanY;
-size_t playerScore = 0;
-bool isGoingLeft = false;
-bool isGoingRight = false;
-bool isGoingUp = false;
-bool isGoingDown = false;
+public:
+	// Function to check if Pacman has been caught by a ghost during chase mode
+	static bool isPacmanCaughtByGhost();
 
-//void spawnPacman() ;
-//void erasePacmanFromOldPosition() ;
-//void updatePacmanGridPosition() ;
-//void clearPacmanPreviousCell();
-//void setPacmanPosition() ;
-//void movePacmanInDirection(int movingX, int movingY, char nextSymbol);
-//void movePacmanUp();
-//void movePacmanDown();
-//void movePacmanLeft() ;
-//void movePacmanRight();
-//void handlePacmanMovement();
-//void updateScore(int points);
+	// Function to spawn Pacman at a random empty position on the grid
+	static void spawnPacman();
+
+	// Function to erase Pacman from its old position
+	static void erasePacmanFromOldPosition();
+
+	// Function to update Pacman's position on the grid
+	static void updatePacmanGridPosition();
+
+	// Function to clear Pacman's previous cell in the grid
+	static void clearPacmanPreviousCell();
+	// Function to set Pacman's current position in the grid
+	static void setPacmanPosition();
+
+	// Function to move Pacman in a specified direction
+	static void movePacmanInDirection(int movingX, int movingY, char nextSymbol);
+
+	// Function to move Pacman up if there is no wall
+	static void movePacmanUp();
+
+	// Function to move Pacman down if there is no wall
+	static void movePacmanDown();
+
+	// Function to move Pacman left if there is no wall
+	static void movePacmanLeft();
+
+	// Function to move Pacman right if there is no wall
+	static void movePacmanRight();
+
+	// Function to handle Pacman's movement based on key press (WASD keys)
+	static void handlePacmanMovement();
+
+	static int distanceToPacman(int ghostCurX, int ghostCurY, int changeX, int changeY);
+
+	static void pacmanMovmentDirectionReset();
+
+	//void spawnPacman() ;
+	//void erasePacmanFromOldPosition() ;
+	//void updatePacmanGridPosition() ;
+	//void clearPacmanPreviousCell();
+	//void setPacmanPosition() ;
+	//void movePacmanInDirection(int movingX, int movingY, char nextSymbol);
+	//void movePacmanUp();
+	//void movePacmanDown();
+	//void movePacmanLeft() ;
+	//void movePacmanRight();
+	//void handlePacmanMovement();
+	//void updateScore(int points);
+};
