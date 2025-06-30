@@ -1,16 +1,24 @@
 #pragma once
-//Solution to course project # <5>
-//Introduction to programming course
-//Faculty of Mathematics and Informatics od Sofia University
-//Winter semester 2024/2025
-//
-//@author <Boris Dimitrov Tsvetkov>
-//idNumber <6MI0600504
-//@compiler Microsoft Visual Studio compiler
-//header file with helper variables for the ghosts
-const char clydeSymbol = 'C';
-const size_t clydeNumber = 3;
-const char* greenColor = "\033[32m";
-const size_t scoreToActivtGreen = 60;
-int greenLastX = -1;
-int greenLastY = -1;
+#include "Ghost.h"
+#include "Settings.h"
+#include <iostream>
+#include <climits>
+class GreenGhost : public Ghost
+{
+public:
+	GreenGhost(const char* color, Position position, char symbol, size_t scoreToActivate, size_t ghostNumber) :
+		Ghost(color, position, symbol, scoreToActivate, ghostNumber) {
+	}
+
+	// Moves the Green Ghost (Clyde) backwards to its previous position if the move is possible
+	void moveBackwards(const char* color)const override;
+
+	// Activate the Green Ghost (Clyde)
+	void activateGhost() const override;
+
+	// Green Ghost algorithm (Clyde)
+	void shortestPathAlgorithm() const override;
+
+};
+
+

@@ -1,16 +1,18 @@
 #pragma once
-//Solution to course project # <5>
-//Introduction to programming course
-//Faculty of Mathematics and Informatics od Sofia University
-//Winter semester 2024/2025
-//
-//@author <Boris Dimitrov Tsvetkov>
-//idNumber <6MI0600504
-//@compiler Microsoft Visual Studio compiler
-//header file with helper variables for the ghosts
-const char blinkySymbol = 'B';
-const size_t blinkyNumber = 0;
-const char* redColor = "\033[31m";
-const size_t scoreToActivtRed = 0;
-int redLastX = -1;
-int redLastY = -1;
+#include "Ghost.h"
+#include "Settings.h"
+#include <iostream>
+#include <climits>
+
+class RedGhost : public Ghost
+{
+public:
+	RedGhost(const char* color, Position position, char symbol, size_t scoreToActivate, size_t ghostNumber) :
+		Ghost(color, position, symbol, scoreToActivate, ghostNumber) {}
+	// Moves the Red Ghost (Blinky) backwards to its previous position if the move is possible
+	void moveBackwards(const char* color)const override;
+	//red algorithm
+	void shortestPathAlgorithm() const override;
+	// Activate the Red Ghost (Blinky)
+	 void activateGhost()const override;
+};

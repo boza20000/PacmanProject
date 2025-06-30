@@ -127,19 +127,31 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BlueGhost.cpp" />
+    <ClCompile Include="Console.cpp" />
     <ClCompile Include="Game.cpp" />
+    <ClCompile Include="Ghost.cpp" />
+    <ClCompile Include="GreenGhost.cpp" />
+    <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Pacman.cpp" />
+    <ClCompile Include="PinkGhost.cpp" />
+    <ClCompile Include="RedGhost.cpp" />
+    <ClCompile Include="Settings.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="map.txt" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BlueGhost.h" />
+    <ClInclude Include="Console.h" />
     <ClInclude Include="Game.h" />
+    <ClInclude Include="Ghost.h" />
     <ClInclude Include="GreenGhost.h" />
     <ClInclude Include="map.h" />
     <ClInclude Include="Pacman.h" />
     <ClInclude Include="PinkGhost.h" />
     <ClInclude Include="RedGhost.h" />
+    <ClInclude Include="Settings.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
